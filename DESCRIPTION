@@ -1,12 +1,10 @@
 Package: quantigas
-Title: What the Package Does (One Line, Title Case)
+Title: Quantitative Analysis of Gas Measurement Data
 Version: 0.0.0.9000
 Authors@R: 
-    person("Brandon", "LeBlanc", , "brandonleblanc733@yahoo.com", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0001-5712-7318"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    person("Brandon", "LeBlanc", , "brandonleblanc733@yahoo.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0001-5712-7318"))
+Description: Tools for the quantitative analysis of laboratory gas data by the Gas Sensing Metrology Group at the National Institute of Standards and Technology.
+License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 8.0.0
+Config/roxygen2/version: 8.1.1

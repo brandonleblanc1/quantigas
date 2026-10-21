@@ -1,13 +1,11 @@
-#' @title
-#' SampData_Embedded Class
+#' [R6::R6Class] for Sample Data
 #'
-#' @description
-#' Derived [R6::R6Class] for sample data from COGAS. This class specifically
-#' deals with data for unknowns when the sample(s) of interest is(are) analyzed
-#' concurrently with the calibration data. It inherits from the [SampData]
-#' class and thus has access to its public and private attributes and methods.
+#' Derived class for processing data from COGAS. Specifically deals with data
+#' for unknowns when the sample(s) of interest is(are) analyzed concurrently
+#' with the calibration data. It inherits from the [SampData] class and thus
+#' has access to its public and private attributes and methods.
 #'
-#' @examples
+#' @export
 SampData_Embedded <- R6::R6Class(
   classname = "SampData_Embedded",
   lock_class = TRUE,
@@ -24,11 +22,11 @@ SampData_Embedded <- R6::R6Class(
     #'
     #' @param cal_obj ([CalData])
     #'   Object used for handling the calibration data.
-    #' @param filt_samples (`character()`)
+    #' @param filt_samples (`character`)
     #'   Sample(s) of interest to filter from the calibration data.
     #' @param ... Unused arguments.
     #'
-    #' @return [SampData_Embedded]
+    #' @return The calling object invisibly.
     clean_data = function(cal_obj, filt_samples, ...) {
       cal_data <- cal_obj$get_data()
 

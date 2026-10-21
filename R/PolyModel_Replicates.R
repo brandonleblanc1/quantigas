@@ -1,161 +1,33 @@
-#' @title
-#' PolyModel_Replicates Class
+#' [R6::R6Class] for Model Building
 #'
-#' @description
-#' Derived [R6::R6Class] for building an error-in-variables model with
-#' replicates data. It inherits from the [PolyModel] class and thus has access
-#' to its public and private attributes and methods.
+#' Derived class for modelling GSMG measurement data. Specifically deals with
+#' building an error-in-variables model with all replicates data. It inherits
+#' from the [PolyModel] class and thus has access to its public and private
+#' attributes and methods.
 #'
-#' @examples
+#' @export
 PolyModel_Replicates <- R6::R6Class(
   classname = "PolyModel_Replicates",
   lock_class = TRUE,
   inherit = PolyModel,
-  private = list(
-    #' @field n_std (`numeric(1)`)
-    #' Number of calibration standards.
-    n_std = NULL,
-
-    #' @field n_repl (`numeric(1)`)
-    #' Total number of replicate response ratios.
-    n_repl = NULL,
-
-    #' @field selected_model (`numeric(1)`)
-    #' Number identifying the model selected in the uncertainty simulation.
-    selected_model = NULL,
-
-    #' @field lambda_mc (`matrix()`)
-    #' Monte Carlo samples for the estimated dark uncertainty.
-    lambda_mc = NULL,
-
-    #' @field init_vals (`data.frame()`)
-    #' Initial values to use for model setup.
-    init_vals = NULL,
-
-    #' @field counts (`data.frame()`)
-    #' Count of the number of replicates for each sample.
-    counts = NULL,
-
-    #' @description
-    #' Objective Function
-    #'
-    #' @details
-    #' This function serves as the objective during optimization and represents
-    #' the likelihood of observing the data given the measurement model, the
-    #' calibration relationship, and the values of the model's adjustable
-    #' parameters.
-    #'
-    #' @param theta (`numeric()`)
-    #'   Adjustable parameters of the model.
-    #' @param func (`function`)
-    #'   Analysis function.
-    #' @param x (`numeric()`)
-    #'   Sampled replicate ratios.
-    #' @param y (`numeric()`)
-    #'   Sampled amount fractions.
-    #'
-    #' @return `numeric()`
-    objective = function(theta, func, x, y) {
-      # Extracting parameters from `theta`. `rho` is the true ratio means,
-      # `sigma` is the true ratio uncertainty not accounted for by the replicate
-      # uncertainties, `nu` is the degrees of freedom for the measurement
-      # process, `tau` is the dark uncertainty lurking in the standards, and
-      # `beta` is the polynomial coefficients.
-      rho <- theta[1:private$n_std]
-      sigma <- exp(theta[(private$n_std + 1):(2 * private$n_std)])
-      nu <- theta[(2 * private$n_std + 1)]
-      tau <- exp(theta[(2 * private$n_std + 2)])
-      beta <- theta[-(1:(2 * private$n_std + 2))]
-
-      xi <- vapply(rho, \(r) func(r, beta), numeric(1))
-      ur_total <- sqrt(
-        private$cal_data$ur^2 + rep(sigma^2 * nu / (nu - 2), private$counts$n)
-      )
-      uc_total <- sqrt(private$init_vals$uc^2 + tau^2)
-
-      # Likelihood of observing the replicate ratios.
-      loglik_r <- sum(stats::dnorm(
-        x,
-        mean = rep(rho, private$counts$n),
-        sd = ur_total,
-        log = TRUE
-      ))
-
-      # Likelihood of observing the certified amount fractions.
-      loglik_c <- sum(stats::dnorm(y, mean = xi, sd = uc_total, log = TRUE))
-
-      -(loglik_r + loglik_c)
-    },
-
-    #' @description
-    #' Run Optimizer
-    #'
-    #' @details
-    #' This function runs the optimization algorithm for the specified model.
-    #'
-    #' @param form (`character(1)`)
-    #'   Formula for the model.
-    #' @param func (`character(1)`)
-    #'   Analysis function to evaluate.
-    #'
-    #' @return `list()`
-    run_opt = function(form, func) {
-      lm0 <- stats::lm(
-        stats::formula(form),
-        tibble::tibble(r = private$init_vals$rho0, c = private$init_vals$c)
-      )
-      beta0 <- unname(lm0$coefficients)
-      tau0 <- stats::sigma(lm0)
-      nu0 <- min(private$n_repl - private$n_std, 100)
-      theta0 <- c(
-        private$init_vals$rho0,
-        log(private$init_vals$sigma0),
-        nu0,
-        log(tau0),
-        beta0
-      )
-
-      lb <- c(
-        private$init_vals$rho_lb,
-        rep(-Inf, private$n_std),
-        3,
-        rep(-Inf, 1 + length(beta0))
-      )
-      ub <- c(
-        private$init_vals$rho_ub,
-        rep(Inf, private$n_std),
-        100,
-        rep(Inf, 1 + length(beta0))
-      )
-
-      private$optimizer(
-        theta0,
-        lb,
-        ub,
-        eval(str2expression(func)),
-        private$cal_data$r,
-        private$init_vals$c,
-        maxtime = 300
-      )
-    }
-  ),
   public = list(
     #' @description
-    #' Create a New [PolyModel_Replicates] Object
+    #' Create a New `PolyModel_Replicates` Object
     #'
     #' @param cal_obj ([CalData])
     #'   Calibration data object.
-    #' @param filt_samples (`character()`)
+    #' @param filt_samples (`character`)
     #'   Sample(s) of interest to exclude from the model. Defaults to an empty
     #'   string.
     #'
-    #' @return [PolyModel_Replicates]
+    #' @return A new `PolyModel_Replicates` object.
     initialize = function(cal_obj, filt_samples = "") {
       stopifnot(inherits(cal_obj, "CalData"))
 
       cal_data <- cal_obj$get_data()
       cal_mc <- cal_obj$get_mc()
 
+      # Combining certification data with cleaned data.
       private$cal_data <- cal_data$cleaned_data %>%
         dplyr::right_join(cal_data$cert_data, by = "sample_id") %>%
         dplyr::filter_out(sample_id %in% filt_samples) %>%
@@ -198,9 +70,9 @@ PolyModel_Replicates <- R6::R6Class(
     },
 
     #' @description
-    #' Print [PolyModel_Replicates] Object
+    #' Print Object
     #'
-    #' @return [PolyModel_Replicates]
+    #' @return The calling object invisibly.
     print = function() {
       super$print()
 
@@ -219,7 +91,7 @@ PolyModel_Replicates <- R6::R6Class(
         "    dark uncertainty mc samples: numeric [",
         length(private$lambda_mc),
         "]\n",
-        "    counts data: tibble [",
+        "    counts data: tbl_df [",
         paste0(dim(private$counts), collapse = " x "),
         "]\n",
         sep = ""
@@ -241,7 +113,7 @@ PolyModel_Replicates <- R6::R6Class(
     #' statistical criteria should be taken into account in conjunction with the
     #' residual plots, which should show no discernable patterns.
     #'
-    #' @return [PolyModel_Replicates]
+    #' @return The calling object invisibly.
     model_selection = function() {
       # Setting up for parallel processing.
       future::plan(future::multisession, workers = future::availableCores() - 2)
@@ -314,9 +186,10 @@ PolyModel_Replicates <- R6::R6Class(
     #' @param model_num (`numeric(1)`)
     #'   Number identifying the candidate polynomial model to use in the
     #'   simulation. Defaults to 1.
+    #' @param ... Additional options for the optimization routine.
     #'
-    #' @return [PolyModel_Replicates]
-    simulate = function(model_num = MODEL_NUM_DEFAULT) {
+    #' @return The calling object invisibly.
+    simulate = function(model_num = defaults$MODEL_NUM, ...) {
       private$selected_model <- model_num
 
       # Extracting necessary parameters from the selected model.
@@ -363,7 +236,8 @@ PolyModel_Replicates <- R6::R6Class(
               ub,
               eval(str2expression(model_info$funcs)),
               r_mc[, i],
-              c_mc[, i]
+              c_mc[, i],
+              ...
             )$solution[-(1:(2 * private$n_std + 2))]
           })
         }
@@ -425,15 +299,16 @@ PolyModel_Replicates <- R6::R6Class(
       invisible(self)
     },
 
-    #' @details
+    #' @description
     #' Predict Unknowns
     #'
-    #' @description
-    #' This function utilizes the results obtained from `simulate` to predict
-    #' new data. MC samples are returned and must be summarized by the caller.
+    #' @details
+    #' This function utilizes the results obtained from
+    #' [`simulate()`](#method-simulate to predict new data. MC samples are
+    #' returned and must be summarized by the caller.
     #'
-    #' @param data (`numeric()`)
-    #'   Must be one of the following:
+    #' @param data (NULL | `numeric` | `matrix`)
+    #'   Behavior will change based on the value provided:
     #'
     #'   * NULL: will calculate the value for a control sample by taking the
     #'   sums of each set of coefficients. Returns a vector.
@@ -443,7 +318,7 @@ PolyModel_Replicates <- R6::R6Class(
     #'   with the corresponding coefficients for each power of r. Returns a
     #'   matrix.
     #'
-    #' @return `numeric()`
+    #' @return A `numeric` or `matrix` with the calculated MC samples.
     predict = function(data = NULL) {
       if (is.null(private$solution_mc)) {
         self$simulate()
@@ -484,7 +359,7 @@ PolyModel_Replicates <- R6::R6Class(
     #' the same time, it can be convenient to select a specific one from the
     #' function call, i.e. `get_info()$n_std`.
     #'
-    #' @return `list()`
+    #' @return A `list` of attributes.
     get_info = function() {
       list(
         n_std = private$n_std,
@@ -502,7 +377,7 @@ PolyModel_Replicates <- R6::R6Class(
     #' convenient to select a specific one from the function call, i.e.
     #' `get_mc()$r_mc`.
     #'
-    #' @return `list()`
+    #' @return A `list` of attributes.
     get_mc = function() {
       rlang::list2(!!!super$get_mc(), lambda_mc = private$lambda_mc)
     },
@@ -516,12 +391,109 @@ PolyModel_Replicates <- R6::R6Class(
     #' convenient to select a specific one from the function call, i.e.
     #' `get_data()$cal_data`.
     #'
-    #' @return `list()`
+    #' @return A `list` of attributes.
     get_data = function() {
       rlang::list2(
         !!!super$get_data(),
         init_vals = private$init_vals,
         counts = private$counts
+      )
+    }
+  ),
+  private = list(
+    # `numeric(1)`: Number of calibration standards.
+    n_std = NULL,
+
+    # `numeric(1)`: Total number of replicate response ratios.
+    n_repl = NULL,
+
+    # `numeric(1)`: Number identifying the model selected in the uncertainty
+    # simulation.
+    selected_model = NULL,
+
+    # `matrix`: Monte Carlo samples for the estimated dark uncertainty.
+    lambda_mc = NULL,
+
+    # [tibble::tibble]: Initial values to use for model setup.
+    init_vals = NULL,
+
+    # [tibble::tibble]: Count of the number of replicates for each sample.
+    counts = NULL,
+
+    # This function serves as the objective during optimization and represents
+    # the likelihood of observing the data given the measurement model, the
+    # calibration relationship, and the values of the model's adjustable
+    # parameters.
+    objective = function(theta, func, x, y) {
+      # Extracting parameters from `theta`. `rho` is the true ratio means,
+      # `sigma` is the true ratio uncertainty not accounted for by the replicate
+      # uncertainties, `nu` is the degrees of freedom for the measurement
+      # process, `tau` is the dark uncertainty lurking in the standards, and
+      # `beta` is the polynomial coefficients.
+      rho <- theta[1:private$n_std]
+      sigma <- exp(theta[(private$n_std + 1):(2 * private$n_std)])
+      nu <- theta[(2 * private$n_std + 1)]
+      tau <- exp(theta[(2 * private$n_std + 2)])
+      beta <- theta[-(1:(2 * private$n_std + 2))]
+
+      xi <- vapply(rho, \(r) func(r, beta), numeric(1))
+      ur_total <- sqrt(
+        private$cal_data$ur^2 + rep(sigma^2 * nu / (nu - 2), private$counts$n)
+      )
+      uc_total <- sqrt(private$init_vals$uc^2 + tau^2)
+
+      # Likelihood of observing the replicate ratios.
+      loglik_r <- stats::dnorm(
+        x,
+        mean = rep(rho, private$counts$n),
+        sd = ur_total,
+        log = TRUE
+      )
+
+      # Likelihood of observing the certified amount fractions.
+      loglik_c <- stats::dnorm(y, mean = xi, sd = uc_total, log = TRUE)
+
+      -sum(loglik_r, loglik_c)
+    },
+
+    # This function runs the optimization algorithm for the specified model.
+    run_opt = function(form, func) {
+      lm0 <- stats::lm(
+        stats::formula(form),
+        tibble::tibble(r = private$init_vals$rho0, c = private$init_vals$c)
+      )
+      beta0 <- unname(lm0$coefficients)
+      tau0 <- stats::sigma(lm0)
+      nu0 <- min(private$n_repl - private$n_std, 100)
+      theta0 <- c(
+        private$init_vals$rho0,
+        log(private$init_vals$sigma0),
+        nu0,
+        log(tau0),
+        beta0
+      )
+
+      lb <- c(
+        private$init_vals$rho_lb,
+        rep(-Inf, private$n_std),
+        3,
+        rep(-Inf, 1 + length(beta0))
+      )
+      ub <- c(
+        private$init_vals$rho_ub,
+        rep(Inf, private$n_std),
+        100,
+        rep(Inf, 1 + length(beta0))
+      )
+
+      private$optimizer(
+        theta0,
+        lb,
+        ub,
+        eval(str2expression(func)),
+        private$cal_data$r,
+        private$init_vals$c,
+        maxtime = 300
       )
     }
   )

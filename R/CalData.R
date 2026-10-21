@@ -1,37 +1,31 @@
-#' @title
-#' CalData Class
+#' [R6::R6Class] for Calibration Data
 #'
-#' @description
-#' Derived [R6::R6Class] for calibration data from COGAS. This class
-#' specifically deals with data for instrument calibration and includes an
-#' attribute to store the certification data associated with the calibration
-#' standards. It inherits from the [COGASData] class and thus has access to its
-#' public and private attributes and methods.
+#' Derived class for processing data from COGAS. Specifically deals with data
+#' for instrument calibration and includes an attribute to store the
+#' certification data associated with the calibration standards. Inherits from
+#' the [COGASData] class and thus has access to its public and private
+#' attributes and methods.
 #'
-#' @examples
+#' @export
 CalData <- R6::R6Class(
   classname = "CalData",
   lock_class = TRUE,
   inherit = COGASData,
-  private = list(
-    #' @field cert_data (`data.frame()`)
-    #' Certification data associated with calibration standards.
-    cert_data = NULL
-  ),
   public = list(
     #' @description
-    #' Create a New [CalData] Object
+    #' Create a New `CalData` Object
     #'
-    #' @param params (`list()`)
+    #' @param params (`list`)
     #'   Parameters to initialize a [COGASData] object. Must also include a
-    #'   `data.frame()` named `cert_data` containing the following columns:
+    #'   `data.frame` or [tibble::tibble] named `cert_data` containing the
+    #'   following columns:
     #'
-    #'   * sample_id (`character()`): sample ids
-    #'   * c_cert (`numeric()`): certified amount fractions
-    #'   * uc_cert (`numeric()`): uncertainties associated with the amount
+    #'   * sample_id (`character`): sample ids
+    #'   * c_cert (`numeric`): certified amount fractions
+    #'   * uc_cert (`numeric`): uncertainties associated with the amount
     #'   fractions
     #'
-    #' @return [CalData]
+    #' @return A new `CalData` object.
     initialize = function(params) {
       # Expected columns to check `cert_data` against.
       expected_cols <- c(
@@ -61,16 +55,16 @@ CalData <- R6::R6Class(
     },
 
     #' @description
-    #' Print [CalData] Object
+    #' Print Object
     #'
-    #' @return [CalData]
+    #' @return The calling object invisibly.
     print = function() {
       super$print()
 
       cat(
         "<CalData>\n",
         "  Private Attributes:\n",
-        "    certification data: tibble [",
+        "    certification data: tbl_df [",
         paste0(dim(private$cert_data), collapse = " x "),
         "]\n",
         sep = ""
@@ -88,9 +82,14 @@ CalData <- R6::R6Class(
     #' convenient to select a specific one from the function call, i.e.
     #' `get_data()$cleaned_data`.
     #'
-    #' @return `list()`
+    #' @return A `list` of attributes.
     get_data = function() {
       rlang::list2(!!!super$get_data(), cert_data = private$cert_data)
     }
+  ),
+  private = list(
+    # [tibble::tibble]: Certification data associated with calibration
+    # standards.
+    cert_data = NULL
   )
 )

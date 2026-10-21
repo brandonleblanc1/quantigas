@@ -1,363 +1,36 @@
-#' @title
-#' COGASData Class
+#' [R6::R6Class] for Processing COGAS Data
 #'
-#' @description
-#' Abstract base [R6::R6Class] for data from COGAS. This class acts as a
-#' container for the process of reading, cleaning, and analyzing raw data from
-#' GSMG measurements. There are general methods for cleaning and summarizing
-#' depending on the instrument used and the compound of interest, propagating
-#' measurement uncertainties, and visualization capabilities.
+#' Base class for processing data from COGAS. Essentially just a container for
+#' the process of reading, cleaning, and analyzing raw data from GSMG
+#' measurements. This object is typically constructed via its derived classes,
+#' [CalData] and [SampData] (and variants).
 #'
-#' @examples
+#' @export
 COGASData <- R6::R6Class(
   classname = "COGASData",
   lock_class = TRUE,
-  private = list(
-    #' @field instrument (`character(1)`)
-    #' Instrument used for the current analysis.
-    instrument = NULL,
-
-    #' @field compound (`character(1)`)
-    #' Compound of interest for the current analysis.
-    compound = NULL,
-
-    #' @field method (`character(1)`)
-    #' Method used to collect the data.
-    method = NULL,
-
-    #' @field control (`character(1)`)
-    #' Name of the control sample used throughout the data file.
-    control = NULL,
-
-    #' @field zero_gas (`character(1)`)
-    #' Name of the zero gas sample used throughout the data file.
-    zero_gas = NULL,
-
-    #' @field cf (`numeric(1)`)
-    #' Correction factor to apply to sample responses.
-    cf = NULL,
-
-    #' @field ucf (`numeric(1)`)
-    #' Uncertainty associated with the correction factor.
-    ucf = NULL,
-
-    #' @field response_mc (`matrix()`)
-    #' Monte Carlo samples for responses.
-    response_mc = NULL,
-
-    #' @field control_mc (`matrix()`)
-    #' Monte Carlo samples for interpolated control responses.
-    control_mc = NULL,
-
-    #' @field ratio_mc (`matrix()`)
-    #' Monte Carlo samples for ratios.
-    ratio_mc = NULL,
-
-    #' @field raw_data (`data.frame()`)
-    #' Raw data from the current analysis.
-    raw_data = NULL,
-
-    #' @field cleaned_data (`data.frame()`)
-    #' Cleaned data from the current analysis.
-    cleaned_data = NULL,
-
-    #' @field summ_stats (`data.frame()`)
-    #' Summary statistics associated with $cleaned_data.
-    summ_stats = NULL,
-
-    #' @field break_set_plot ([ggplot2::ggplot])
-    #' Plot of the normalized responses and ratios for each break set.
-    break_set_plot = NULL,
-
-    #' @field replicate_plot ([ggplot2::ggplot])
-    #' Plot of replicate ratios with uncertainty bars for each sample.
-    replicate_plot = NULL,
-
-    #' @description
-    #' Make Column Names
-    #'
-    #' @details
-    #' This function generates the column names for the data being read in
-    #' based on the value of `private$instrument` and `private$method`.
-    #'
-    #' @return `character()`
-    make_col_names = function() {
-      default_names <- c("date_time", "port", "sample_id")
-      data_names <- if (private$method == TIME_SERIES) {
-        "response_ts"
-      } else {
-        c("response", "uresponse")
-      }
-
-      if (private$instrument == GAS_CHROM) {
-        data_names <- c("file_name", "rt", data_names, "height")
-      }
-
-      c(default_names, data_names)
-    },
-
-    #' @description
-    #' Read Data from CSV
-    #'
-    #' @details
-    #' This function reads in the raw data from a CSV file and adds the
-    #' following metadata variables:
-    #'
-    #' * `sample_set`: represents the individual sample measurements
-    #' * `control_set`: represents the different measurements of the control
-    #' * `break_set`: represents the separate sub-analyses performed
-    #' * `day_set`: represents the distinct analytical days of an analysis
-    #'
-    #' If analyzing data from multiple analyses, it is expected that the data
-    #' from each is contained in the same file, separated by a header row. This
-    #' is how different break sets are determined.
-    #'
-    #' @param filepath (`character(1)`)
-    #'   Path to the data file.
-    #' @param ... Unused arguments.
-    #'
-    #' @return `data.frame()`
-    read_data = function(filepath, ...) {
-      readr::read_file(filepath) %>%
-        stringr::str_to_upper() %>%
-        # Searching for lines that contain the header row, which should contain
-        # "DATE".
-        stringr::str_split_1("DATE.+\\r?\\n{1}") %>%
-        purrr::discard(\(txt) txt == "") %>%
-        # Reading in each chunk of data found.
-        purrr::map(\(txt) {
-          readr::read_csv(
-            I(txt),
-            col_names = private$make_col_names(),
-            show_col_types = FALSE
-          )
-        }) %>%
-        dplyr::bind_rows(.id = "break_set") %>%
-        dplyr::mutate(
-          # Removing any newline characters still present from some of the GC
-          # processing software.
-          dplyr::across(tidyselect::where(is.character), \(txt) {
-            stringr::str_remove_all(txt, "\\n")
-          }),
-          break_set = as.numeric(break_set),
-          date = as.Date(date_time),
-          is_diff_break = break_set != dplyr::lag(break_set),
-          # `sample_set` is determined from differences between consecutive
-          # `sample_id` values.
-          is_diff_samp = sample_id != dplyr::lag(sample_id),
-          # `control_set` is determined from measurements of the control sample.
-          is_control = sample_id == private$control,
-          # Replacing resulting `NA` values from `lag`.
-          dplyr::across(tidyselect::where(is.logical), \(col) {
-            dplyr::replace_values(col, NA ~ TRUE)
-          }),
-          sample_set = cumsum(is_diff_break | is_diff_samp),
-          control_set = cumsum(is_control & (is_diff_break | is_diff_samp))
-        ) %>%
-        # `day_set` is just the different `date` groupings.
-        dplyr::mutate(day_set = dplyr::cur_group_id(), .by = date) %>%
-        dplyr::relocate(
-          c(sample_set, control_set, break_set, day_set),
-          .after = sample_id
-        ) %>%
-        dplyr::select(!date:is_control)
-    },
-
-    #' @description
-    #' Summarize Time Series Data
-    #'
-    #' @details
-    #' This function takes the raw data from the current analysis and produces
-    #' summary statistics for the associated time series data. Its main purpose
-    #' is for GC data and the cases where data is collected using older COGAS
-    #' versions, which don't automatically produce summaries of the data.
-    #' Implementation of a robust time series framework will be provided in
-    #' the future for modelling instrument response dynamics.
-    #'
-    #' @param raw (`data.frame()`)
-    #'   Raw data for the current analysis.
-    #' @param n (`numeric(1)`)
-    #'   Number of data points to use from the end of each `sample_set`.
-    #'   Defaults to 60.
-    #' @param ... Unused arguments.
-    #'
-    #' @return `data.frame()`
-    summarize_if_ts = function(raw, n = N_DEFAULT, ...) {
-      if (private$method == TIME_SERIES) {
-        raw %>%
-          dplyr::slice_tail(n = n, by = sample_set) %>%
-          dplyr::summarise(
-            dplyr::across(date_time:day_set, dplyr::last),
-            response = mean(response_ts),
-            uresponse = sd(response_ts),
-            .by = sample_set
-          ) %>%
-          dplyr::relocate(sample_set, .after = sample_id)
-      } else {
-        raw
-      }
-    },
-
-    #' @description
-    #' Perform Instrument-Specific Calculations
-    #'
-    #' @details
-    #' This function takes the raw data from the current analysis and performs
-    #' operations depending on the selected instrument.
-    #'
-    #' @param raw (`data.frame()`)
-    #'   Raw data for the current analysis.
-    #'
-    #' @return `data.frame()`
-    instrument_calc = function(raw) {
-      if (private$instrument == HORIBA_NDIR) {
-        # Adding quantization error to uncertainties before propagating.
-        # These values are based on digital resolution of instrument
-        # and assuming a uniform distribution for the uncertainty about any
-        # particular response.
-        resolution <- if (private$compound == CARBON_DIOXIDE) 0.01 else 0.1
-        raw %>% dplyr::mutate(uresponse = sqrt(uresponse^2 + resolution^2 / 12))
-      } else {
-        raw
-      }
-    },
-
-    #' @description
-    #' Calculate Response Ratios
-    #'
-    #' @details
-    #' This function takes the raw data from the current analysis and performs
-    #' the calculation of response ratios and propagation of their respective
-    #' uncertainties for the sampling sequence to implement a basic drift
-    #' correction procedure. This procedure assumes the control sample acts as
-    #' the conditional mean for the entire sampling sequence. Response ratios
-    #' are calculated by dividing sample response measurements by the
-    #' linearly-interpolated response measurements of the control. Uncertainty
-    #' propagation is performed via a simple Monte Carlo simulation in which
-    #' the responses for the analyte of interest are assumed to be normally
-    #' distributed.
-    #'
-    #' @param raw (`data.frame()`)
-    #'   Raw data for the current analysis.
-    #' @param K (`numeric(1)`)
-    #'   Number of Monte Carlo samples to draw. Defaults to 10,000.
-    #' @param cf_samples (`character()`)
-    #'   Samples to apply the correction factor to. Defaults to "none". Must be
-    #'   one of the following:
-    #'
-    #'   * "none" to skip
-    #'   * "all" for all samples
-    #'   * "control" for just the control
-    #'   * "not_control" for all samples but the control
-    #'   * vector of specific sample ids to apply to only those samples
-    #'
-    #' @param cf_operation (`character(1)`)
-    #'   Operation to use when applying the correction factor. Defaults to "*".
-    #' @param ... Unused arguments.
-    #'
-    #' @return `data.frame()`
-    calc_ratios = function(
-      raw,
-      K = K_DEFAULT,
-      cf_samples = CF_SAMPLES_DEFAULT,
-      cf_operation = CF_OPERATION_DEFAULT,
-      ...
-    ) {
-      # Getting necessary indices for interpolation and indices to apply
-      # correction factor to, if specified.
-      x_out <- seq_len(nrow(raw))
-      x_control <- which(raw$sample_id == private$control)
-      x_cf <- switch(
-        cf_samples,
-        none = NULL,
-        all = x_out,
-        control = x_control,
-        not_control = which(raw$sample_id != private$control),
-        which(raw$sample_id %in% cf_samples)
-      )
-
-      # Monte Carlo simulation for uncertainty propagation; assuming responses
-      # and correction factors come from a normal distribution.
-      private$response_mc <- stats::rnorm(
-        nrow(raw) * K,
-        mean = raw$response,
-        sd = raw$uresponse
-      ) %>%
-        matrix(ncol = K)
-
-      if (!is.null(x_cf)) {
-        cf_mc <- stats::rnorm(K, mean = private$cf, sd = private$ucf)
-
-        # Applying correction factor to specified MC samples.
-        private$response_mc[x_cf, ] <- sweep(
-          private$response_mc[x_cf, ],
-          2,
-          cf_mc,
-          FUN = cf_operation
-        )
-
-        # Applying correction factor to specified samples in original data.
-        raw$response[x_cf] <- eval(call(
-          cf_operation,
-          raw$response[x_cf],
-          private$cf
-        ))
-      }
-
-      # Performing interpolation on each column of `response_mc`. Each column
-      # corresponds to a MC sample of the entire analytical sequence so that the
-      # rows match up with the raw data.
-      private$control_mc <- apply(private$response_mc, 2, \(col) {
-        stats::approx(
-          x = x_control,
-          y = col[x_control],
-          xout = x_out,
-          na.rm = FALSE
-        )$y
-      })
-
-      # Calculating response ratios.
-      private$ratio_mc <- private$response_mc / private$control_mc
-
-      # Interpolating control vals and calculating ratios in original data,
-      # as well as their respective uncertainty estimates from the simulation.
-      raw %>%
-        dplyr::mutate(
-          control = stats::approx(
-            x = x_control,
-            y = response[x_control],
-            xout = x_out,
-            na.rm = FALSE
-          )$y,
-          ucontrol = apply(private$control_mc, 1, robustbase::Qn),
-          ratio = response / control,
-          uratio = apply(private$ratio_mc, 1, robustbase::Qn)
-        )
-    }
-  ),
   public = list(
     #' @description
-    #' Create a New [COGASData] Object
+    #' Create a New `COGASData` Object
     #'
     #' @details
-    #' This object is typically constructed via its derived classes [CalData]
-    #' and [SampData]. Automatically calls `clean_data`.
+    #' Automatically calls [`clean_data()`](#method-clean_data).
     #'
-    #' @param params (`list()`)
+    #' @param params (`list`)
     #'   Parameters pertaining to the current analysis. Must contain the
     #'   following at minimum:
     #'
     #'   * instrument (`character(1)`): instrument used
     #'   * compound (`character(1)`): compound of interest
     #'   * control (`character(1)`): name of the control sample
-    #'   * filepath (`character(1)`): passed to `private$read_data`
+    #'   * filepath (`character(1)`): passed to `private$read_data()`
     #'
     #'   Additional parameters for other private attributes or arguments to
     #'   helper functions can also be given and will be used in the proper
     #'   location. Any additional parameters left unspecified will be given
     #'   default values.
     #'
-    #' @return [COGASData]
+    #' @return A new `COGASData` object.
     initialize = function(params) {
       # Validating inputs.
       stopifnot(
@@ -371,22 +44,22 @@ COGASData <- R6::R6Class(
       private$method <- if ("method" %in% names(params)) {
         params$method
       } else {
-        METHOD_DEFAULT
+        defaults$METHOD
       }
       private$zero_gas <- if ("zero_gas" %in% names(params)) {
         stringr::str_to_upper(params$zero_gas)
       } else {
-        ZERO_GAS_DEFAULT
+        defaults$ZERO_GAS
       }
       private$cf <- if ("cf" %in% names(params)) {
         params$cf
       } else {
-        CF_DEFAULT
+        defaults$CF
       }
       private$ucf <- if ("ucf" %in% names(params)) {
         params$ucf
       } else {
-        UCF_DEFAULT
+        defaults$UCF
       }
 
       rlang::inject(self$clean_data(
@@ -395,9 +68,9 @@ COGASData <- R6::R6Class(
     },
 
     #' @description
-    #' Print [COGASData] Object
+    #' Print Object
     #'
-    #' @return [COGASData]
+    #' @return The calling object invisibly.
     print = function() {
       cat(
         "<COGASData>\n",
@@ -432,13 +105,13 @@ COGASData <- R6::R6Class(
         "    ratio mc samples: matrix [",
         paste0(dim(private$ratio_mc), collapse = " x "),
         "]\n",
-        "    raw data: tibble [",
+        "    raw data: tbl_df [",
         paste0(dim(private$raw_data), collapse = " x "),
         "]\n",
-        "    cleaned data: tibble [",
+        "    cleaned data: tbl_df [",
         paste0(dim(private$cleaned_data), collapse = " x "),
         "]\n",
-        "    summary stats: tibble [",
+        "    summary stats: tbl_df [",
         paste0(dim(private$summ_stats), collapse = " x "),
         "]\n",
         "    break set plot: ",
@@ -456,7 +129,7 @@ COGASData <- R6::R6Class(
     #'
     #' @details
     #' This function reads in and cleans the data from the current analysis.
-    #' Currently only has support for reading in data from a CSV file containing
+    #' Currently only has support for reading data from a CSV file containing
     #' all of the raw data scraped from a COGAS Excel workbook. Based on the
     #' instrument used, compound of interest, and data collection method,
     #' different data operations may be performed.
@@ -470,7 +143,7 @@ COGASData <- R6::R6Class(
     #'
     #' @param ... Additional named arguments to pass to helper functions.
     #'
-    #' @return [COGASData]
+    #' @return The calling object invisibly.
     clean_data = function(...) {
       private$raw_data <- private$read_data(...) %>%
         private$summarize_if_ts(...) %>%
@@ -485,7 +158,12 @@ COGASData <- R6::R6Class(
         dplyr::select(!tidyselect::ends_with("control")) %>%
         dplyr::filter_out(dplyr::when_any(
           sample_id %in%
-            c(private$control, private$zero_gas, DO_NOT_INCLUDE, PRECONDITION),
+            c(
+              private$control,
+              private$zero_gas,
+              misc$DO_NOT_INCLUDE,
+              misc$PRECONDITION
+            ),
           control_set == 0
         )) %>%
         dplyr::mutate(dplyr::across(
@@ -506,12 +184,12 @@ COGASData <- R6::R6Class(
     #' computes summary statistics according to the supplied grouping
     #' variables.
     #'
-    #' @param summ_cols (`character()`)
+    #' @param summ_cols (`character`)
     #'   Variables to group by when performing calculation. Defaults to
     #'   "sample_id".
     #'
-    #' @return [COGASData]
-    summarize_data = function(summ_cols = SUMM_COLS_DEFAULT) {
+    #' @return The calling object invisibly.
+    summarize_data = function(summ_cols = defaults$SUMM_COLS) {
       private$summ_stats <- private$cleaned_data %>%
         dplyr::summarise(
           avg_response = mean(response),
@@ -540,14 +218,14 @@ COGASData <- R6::R6Class(
     #' This function generates useful diagnostic plots for the data from the
     #' current analysis.
     #'
-    #' @return [COGASData]
+    #' @return The calling object invisibly.
     plot_data = function() {
       # Plotting ratios and responses, normalized to their respective averages,
       # for each `break_set` to understand how well the drift correction
       # procedure is working.
       private$break_set_plot <- private$raw_data %>%
         dplyr::filter_out(dplyr::when_any(
-          sample_id %in% c(private$zero_gas, PRECONDITION),
+          sample_id %in% c(private$zero_gas, misc$PRECONDITION),
           control_set == 0
         )) %>%
         dplyr::summarise(
@@ -661,7 +339,7 @@ COGASData <- R6::R6Class(
     #' the same time, it can be convenient to select a specific one from the
     #' function call, i.e. `get_info()$instrument`.
     #'
-    #' @return `list()`
+    #' @return A `list` of attributes.
     get_info = function() {
       list(
         instrument = private$instrument,
@@ -683,7 +361,7 @@ COGASData <- R6::R6Class(
     #' convenient to select a specific one from the function call, i.e.
     #' `get_mc()$response_mc`.
     #'
-    #' @return `list()`
+    #' @return A `list` of attributes.
     get_mc = function() {
       list(
         response_mc = private$response_mc,
@@ -701,7 +379,7 @@ COGASData <- R6::R6Class(
     #' convenient to select a specific one from the function call, i.e.
     #' `get_data()$cleaned_data`.
     #'
-    #' @return `list()`
+    #' @return A `list` of attributes.
     get_data = function() {
       list(
         raw_data = private$raw_data,
@@ -719,7 +397,7 @@ COGASData <- R6::R6Class(
     #' to select a specific one from the function call, i.e.
     #' `get_plots()$break_set_plot`.
     #'
-    #' @return `list()`
+    #' @return A `list` of attributes.
     get_plots = function() {
       list(
         break_set_plot = private$break_set_plot,
@@ -736,11 +414,259 @@ COGASData <- R6::R6Class(
     #' @param filepath (`character(1)`)
     #'   Path to save the object to.
     #'
-    #' @return [COGASData]
+    #' @return The calling object invisibly.
     save_object = function(filepath) {
       saveRDS(self, file = filepath)
 
       invisible(self)
+    }
+  ),
+  private = list(
+    # `character(1)`: Instrument used for the current analysis.
+    instrument = NULL,
+
+    # `character(1)`: Compound of interest for the current analysis.
+    compound = NULL,
+
+    # `character(1)`: Method used to collect the data.
+    method = NULL,
+
+    # `character(1)`: Name of the control sample used throughout the data file.
+    control = NULL,
+
+    # `character(1)`: Name of the zero gas sample used throughout the data file.
+    zero_gas = NULL,
+
+    # `numeric(1)`: Correction factor to apply to sample responses.
+    cf = NULL,
+
+    # `numeric(1)`: Uncertainty associated with the correction factor.
+    ucf = NULL,
+
+    # `matrix`: Monte Carlo samples for responses.
+    response_mc = NULL,
+
+    # `matrix`: Monte Carlo samples for interpolated control responses.
+    control_mc = NULL,
+
+    # `matrix`: Monte Carlo samples for ratios.
+    ratio_mc = NULL,
+
+    # [tibble::tibble]: Raw data from the current analysis.
+    raw_data = NULL,
+
+    # [tibble::tibble]: Cleaned data from the current analysis.
+    cleaned_data = NULL,
+
+    # [tibble::tibble]: Summary statistics on the cleaned data.
+    summ_stats = NULL,
+
+    # [ggplot2::ggplot]: Plot of the normalized responses and ratios for each
+    # break set.
+    break_set_plot = NULL,
+
+    # [ggplot2::ggplot]: Plot of replicate ratios with uncertainty bars for
+    # each sample.
+    replicate_plot = NULL,
+
+    make_col_names = function() {
+      default_names <- c("date_time", "port", "sample_id")
+      data_names <- if (private$method == misc$TIME_SERIES) {
+        "response_ts"
+      } else {
+        c("response", "uresponse")
+      }
+
+      if (private$instrument == instruments$GAS_CHROM) {
+        data_names <- c("file_name", "rt", data_names, "height")
+      }
+
+      c(default_names, data_names)
+    },
+
+    # This function reads in the raw data from a CSV file and adds the
+    # following metadata variables:
+    #
+    # * `sample_set`: represents the individual sample measurements
+    # * `control_set`: represents the different measurements of the control
+    # * `break_set`: represents the separate sub-analyses performed
+    # * `day_set`: represents the distinct analytical days of an analysis
+    #
+    # If analyzing data from multiple analyses, it is expected that the data
+    # from each is contained in the same file, separated by a header row. This
+    # is how different break sets are determined.
+    read_data = function(filepath, ...) {
+      readr::read_file(filepath) %>%
+        stringr::str_to_upper() %>%
+        # Searching for lines that contain the header row, which should contain
+        # "DATE".
+        stringr::str_split_1("DATE.+\\r?\\n{1}") %>%
+        purrr::discard(\(txt) txt == "") %>%
+        # Reading in each chunk of data found.
+        purrr::map(\(txt) {
+          readr::read_csv(
+            I(txt),
+            col_names = private$make_col_names(),
+            show_col_types = FALSE
+          )
+        }) %>%
+        dplyr::bind_rows(.id = "break_set") %>%
+        dplyr::mutate(
+          # Removing any newline characters still present from some of the GC
+          # processing software.
+          dplyr::across(tidyselect::where(is.character), \(txt) {
+            stringr::str_remove_all(txt, "\\n")
+          }),
+          break_set = as.numeric(break_set),
+          date = as.Date(date_time),
+          is_diff_break = break_set != dplyr::lag(break_set),
+          # `sample_set` is determined from differences between consecutive
+          # `sample_id` values.
+          is_diff_samp = sample_id != dplyr::lag(sample_id),
+          # `control_set` is determined from measurements of the control sample.
+          is_control = sample_id == private$control,
+          # Replacing resulting `NA` values from `lag`.
+          dplyr::across(tidyselect::where(is.logical), \(col) {
+            dplyr::replace_values(col, NA ~ TRUE)
+          }),
+          sample_set = cumsum(is_diff_break | is_diff_samp),
+          control_set = cumsum(is_control & (is_diff_break | is_diff_samp))
+        ) %>%
+        # `day_set` is just the different `date` groupings.
+        dplyr::mutate(day_set = dplyr::cur_group_id(), .by = date) %>%
+        dplyr::relocate(
+          c(sample_set, control_set, break_set, day_set),
+          .after = sample_id
+        ) %>%
+        dplyr::select(!date:is_control)
+    },
+
+    # This function takes the raw data from the current analysis and produces
+    # summary statistics for the associated time series data. Implementation of
+    # a robust time series framework will be provided in the future for
+    # modelling instrument response dynamics.
+    summarize_if_ts = function(raw, n = defaults$N, ...) {
+      if (private$method == misc$TIME_SERIES) {
+        raw %>%
+          dplyr::slice_tail(n = n, by = sample_set) %>%
+          dplyr::summarise(
+            dplyr::across(date_time:day_set, dplyr::last),
+            response = mean(response_ts),
+            uresponse = sd(response_ts),
+            .by = sample_set
+          ) %>%
+          dplyr::relocate(sample_set, .after = sample_id)
+      } else {
+        raw
+      }
+    },
+
+    # This function takes the raw data from the current analysis and performs
+    # operations depending on the selected instrument.
+    instrument_calc = function(raw) {
+      if (private$instrument == instruments$HORIBA_NDIR) {
+        # Adding quantization error to uncertainties before propagating.
+        # These values are based on digital resolution of instrument
+        # and assuming a uniform distribution for the uncertainty about any
+        # particular response.
+        resolution <- if (private$compound == compounds$CARBON_DIOXIDE) {
+          0.01
+        } else {
+          0.1
+        }
+        raw %>% dplyr::mutate(uresponse = sqrt(uresponse^2 + resolution^2 / 12))
+      } else {
+        raw
+      }
+    },
+
+    # This function takes the raw data from the current analysis and performs
+    # the calculation of response ratios and propagation of their respective
+    # uncertainties for the sampling sequence to implement a basic drift
+    # correction procedure. This procedure assumes the control sample acts as
+    # the conditional mean for the entire sampling sequence. Response ratios
+    # are calculated by dividing sample response measurements by the
+    # linearly-interpolated response measurements of the control. Uncertainty
+    # propagation is performed via a simple Monte Carlo simulation in which
+    # the responses for the analyte of interest are assumed to be normally
+    # distributed.
+    calc_ratios = function(
+      raw,
+      K = defaults$K,
+      cf_samples = defaults$CF_SAMPLES,
+      cf_operation = defaults$CF_OPERATION,
+      ...
+    ) {
+      # Getting necessary indices for interpolation and indices to apply
+      # correction factor to, if specified.
+      x_out <- seq_len(nrow(raw))
+      x_control <- which(raw$sample_id == private$control)
+      x_cf <- switch(
+        cf_samples,
+        none = NULL,
+        all = x_out,
+        control = x_control,
+        not_control = which(raw$sample_id != private$control),
+        which(raw$sample_id %in% cf_samples)
+      )
+
+      # Monte Carlo simulation for uncertainty propagation; assuming responses
+      # and correction factors come from a normal distribution.
+      private$response_mc <- stats::rnorm(
+        nrow(raw) * K,
+        mean = raw$response,
+        sd = raw$uresponse
+      ) %>%
+        matrix(ncol = K)
+
+      if (!is.null(x_cf)) {
+        cf_mc <- stats::rnorm(K, mean = private$cf, sd = private$ucf)
+
+        # Applying correction factor to specified MC samples.
+        private$response_mc[x_cf, ] <- sweep(
+          private$response_mc[x_cf, ],
+          2,
+          cf_mc,
+          FUN = cf_operation
+        )
+
+        # Applying correction factor to specified samples in original data.
+        raw$response[x_cf] <- eval(call(
+          cf_operation,
+          raw$response[x_cf],
+          private$cf
+        ))
+      }
+
+      # Performing interpolation on each column of `response_mc`. Each column
+      # corresponds to a MC sample of the entire analytical sequence so that the
+      # rows match up with the raw data.
+      private$control_mc <- apply(private$response_mc, 2, \(col) {
+        stats::approx(
+          x = x_control,
+          y = col[x_control],
+          xout = x_out,
+          na.rm = FALSE
+        )$y
+      })
+
+      # Calculating response ratios.
+      private$ratio_mc <- private$response_mc / private$control_mc
+
+      # Interpolating control vals and calculating ratios in original data,
+      # as well as their respective uncertainty estimates from the simulation.
+      raw %>%
+        dplyr::mutate(
+          control = stats::approx(
+            x = x_control,
+            y = response[x_control],
+            xout = x_out,
+            na.rm = FALSE
+          )$y,
+          ucontrol = apply(private$control_mc, 1, robustbase::Qn),
+          ratio = response / control,
+          uratio = apply(private$ratio_mc, 1, robustbase::Qn)
+        )
     }
   )
 )

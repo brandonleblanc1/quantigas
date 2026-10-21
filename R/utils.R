@@ -1,10 +1,14 @@
-#' @title
-#' ggplot2 Publication Theme
+#' Re-export [magrittr::pipe](magrittr::`%>%`)
 #'
-#' @description
-#' Add a sleek publication-style theme to a ggplot2 object.
+#' @importFrom magrittr %>%
 #'
-#' @details
+#' @export
+magrittr::`%>%`
+
+#' [ggplot2::ggplot] Publication Theme
+#'
+#' Add a sleek publication-style theme to a [ggplot2::ggplot] object.
+#'
 #' Copied and modified from https://github.com/koundy/ggplot_theme_Publication.
 #'
 #' @param base_size (`numeric(1)`)
@@ -14,7 +18,12 @@
 #'
 #' @examples
 #' plot_to_customize + theme_Publication()
-theme_publication <- function(base_size = 11, base_family = "sans") {
+#'
+#' @export
+theme_publication <- function(
+  base_size = defaults$FONTSIZE_DEFAULT,
+  base_family = defaults$FONTFAMILY_DEFAULT
+) {
   (ggthemes::theme_foundation(
     base_size = base_size,
     base_family = base_family

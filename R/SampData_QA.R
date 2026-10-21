@@ -1,40 +1,30 @@
-#' @title
-#' SampData_QA Class
+#' [R6::R6Class] for Sample Data
 #'
-#' @description
-#' Derived [R6::R6Class] for sample data from COGAS. This class specifically
-#' deals with QA data for unknown samples and comparing a sample's certified
-#' value to the current calculation. It inherits from the [SampData] class and
-#' thus has access to its public and private attributes and methods.
+#' Derived class for processing data from COGAS. Specifically deals with QA
+#' data for unknown samples and comparing a sample's certified value to the
+#' current calculation. It inherits from the [SampData] class and thus has
+#' access to its public and private attributes and methods.
 #'
-#' @examples
+#' @export
 SampData_QA <- R6::R6Class(
   classname = "SampData_QA",
   lock_class = TRUE,
   inherit = SampData,
-  private = list(
-    #' @field cert_data (`data.frame()`)
-    #' Certification data associated with analyzed samples.
-    cert_data = NULL,
-
-    #' @field qa_results_plot ([ggplot2::ggplot])
-    #' Plot of the certified and current amount fractions for each sample.
-    qa_results_plot = NULL
-  ),
   public = list(
     #' @description
-    #' Create a New [SampData_QA] Object
+    #' Create a New `SampData_QA` Object
     #'
-    #' @param params (`list()`)
+    #' @param params (`list`)
     #'   Parameters to initialize a [COGASData] object. Must also include a
-    #'   `data.frame()` named `cert_data` containing the following columns:
+    #'   `data.frame` or [tibble::tibble] named `cert_data` containing the
+    #'   following columns:
     #'
-    #'   * sample_id (`character()`): sample ids
-    #'   * c_cert (`numeric()`): certified amount fractions
-    #'   * uc_cert (`numeric()`): uncertainties associated with the amount
+    #'   * sample_id (`character`): sample ids
+    #'   * c_cert (`numeric`): certified amount fractions
+    #'   * uc_cert (`numeric`): uncertainties associated with the amount
     #'   fractions
     #'
-    #' @return [SampData_QA]
+    #' @return A new `SampData_QA` object.
     initialize = function(params) {
       # Expected columns to check `cert_data` against.
       expected_cols <- c(
@@ -64,16 +54,16 @@ SampData_QA <- R6::R6Class(
     },
 
     #' @description
-    #' Print [SampData_QA] Object
+    #' Print Object
     #'
-    #' @return [SampData_QA]
+    #' @return The calling object invisibly.
     print = function() {
       super$print()
 
       cat(
         "<SampData_QA>\n",
         "  Private Attributes:\n",
-        "    certification data: tibble [",
+        "    certification data: tbl_df [",
         paste0(dim(private$cert_data), collapse = " x "),
         "    qa results plot: ",
         ifelse(is.null(private$qa_results_plot), "NULL\n", "ggplot\n"),
@@ -88,13 +78,14 @@ SampData_QA <- R6::R6Class(
     #' Calculate Amount Fractions
     #'
     #' @details
-    #' The parameters needed in the call to `super$calc_amounts()` must be
+    #' The parameters needed in the call to
+    #' [`SampData$calc_amounts()`](SampData#method-calc_amounts) must be
     #' passed through `...`. The function additionally calculates differences
     #' between the certified amount fractions and the current calculations.
     #'
-    #' @param ... Additional named arguments to pass to `super$calc_amounts()`.
+    #' @param ... Additional named arguments.
     #'
-    #' @return [SampData_QA]
+    #' @return The calling object invisibly.
     calc_amounts = function(...) {
       super$calc_amounts(...)
 
@@ -120,8 +111,8 @@ SampData_QA <- R6::R6Class(
     #' @param units (`character(1)`)
     #'   Units to use for the y-axis label. Defaults to "mu*mol ~~ mol^-1".
     #'
-    #' @return [SampData_QA]
-    plot_data = function(units = UNITS_DEFAULT) {
+    #' @return The calling object invisibly.
+    plot_data = function(units = defaults$UNITS) {
       if (!is.null(private$amounts)) {
         super$plot_data(units)
 
@@ -173,7 +164,7 @@ SampData_QA <- R6::R6Class(
     #' convenient to select a specific one from the function call, i.e.
     #' `get_data()$cleaned_data`.
     #'
-    #' @return `list()`
+    #' @return A `list` of attributes.
     get_data = function() {
       rlang::list2(!!!super$get_data(), cert_data = private$cert_data)
     },
@@ -187,12 +178,20 @@ SampData_QA <- R6::R6Class(
     #' to select a specific one from the function call, i.e.
     #' `get_plots()$break_set_plot`.
     #'
-    #' @return `list()`
+    #' @return A `list` of attributes.
     get_plots = function() {
       rlang::list2(
         !!!super$get_plots(),
         qa_results_plot = private$qa_results_plot
       )
     }
+  ),
+  private = list(
+    # [tibble::tibble] Certification data associated with analyzed samples.
+    cert_data = NULL,
+
+    # [ggplot2::ggplot] Plot of the certified and current amount fractions
+    # for each sample.
+    qa_results_plot = NULL
   )
 )

@@ -1,47 +1,30 @@
-#' @title
-#' SampData Class
+#' [R6::R6Class] for Sample Data
 #'
-#' @description
-#' Derived [R6::R6Class] for sample data from COGAS. This class specifically
-#' deals with data for unknown samples and calculating/visualizing results
-#' from the calibration model. It inherits from the [COGASData] class and thus
-#' has access to its public and private attributes and methods.
+#' Derived class for processing data from COGAS. Specifically deals with data
+#' for unknown samples and calculating/visualizing results from the calibration
+#' model. Inherits from the [COGASData] class and thus has access to its public
+#' and private attributes and methods.
 #'
-#' @examples
+#' @export
 SampData <- R6::R6Class(
   classname = "SampData",
   lock_class = TRUE,
   inherit = COGASData,
-  private = list(
-    #' @field amount_mc (`matrix()`)
-    #' Monte Carlo samples for calculated amount fractions.
-    amount_mc = NULL,
-
-    #' @field amounts (`data.frame()`)
-    #' Calculated amount fractions and their associated uncertainties based on
-    #' the calibration model.
-    amounts = NULL,
-
-    #' @field amount_violin_plot ([ggplot2::ggplot])
-    #' Plot of the distributions of the amount fraction MC samples for each
-    #' sample.
-    amount_violin_plot = NULL
-  ),
   public = list(
     #' @description
-    #' Create a New [SampData] Object
+    #' Create a New `SampData` Object
     #'
-    #' @param params (`list()`)
+    #' @param params (`list`)
     #'   Parameters to initialize a [COGASData] object. The private attributes
     #'   can either be given as normal, or a [CalData] object can be specified
     #'   to pull information from.
     #'
-    #' @return [SampData]
+    #' @return A new `SampData` object.
     initialize = function(params) {
       # Validating inputs.
       stopifnot(length(params) > 0)
 
-      # Allowing two different ways to initialize a [SampData] object: 1) pass
+      # Allowing two different ways to initialize a `SampData` object: 1) pass
       # a [CalData] object and copy its parameters, or 2) treat the
       # initialization as for a normal [COGASData] object.
       if ("cal_obj" %in% names(params)) {
@@ -67,9 +50,9 @@ SampData <- R6::R6Class(
     },
 
     #' @description
-    #' Print [SampData] Object
+    #' Print Object
     #'
-    #' @return [SampData]
+    #' @return The calling object invisibly.
     print = function() {
       super$print()
 
@@ -79,7 +62,7 @@ SampData <- R6::R6Class(
         "    amount mc samples: matrix [",
         paste0(dim(private$amount_mc), collapse = " x "),
         "]\n",
-        "    calculated amounts: tibble [",
+        "    calculated amounts: tbl_df [",
         paste0(dim(private$amounts), collapse = " x "),
         "]\n",
         "    amount violin plot: ",
@@ -101,19 +84,19 @@ SampData <- R6::R6Class(
     #' from the ratio MC samples that were used in the ratio uncertainty
     #' calculation.
     #'
-    #' @param model_obj ([ModelBuilder] | `numeric(2)`)
+    #' @param model_obj ([ModelBuilder] | `numeric` | [tibble::tibble])
     #'   Calibration model object, or a vector/list/data frame containing the
     #'   following named parameters for the control sample:
     #'
     #'   * amount: certified amount fraction
     #'   * uamount: uncertainty associated with the amount fraction
     #'
-    #' @param summ_cols (`character()`)
+    #' @param summ_cols (`character`)
     #'   Variables to group by when performing calculation. Defaults to
     #'   "sample_id".
     #'
-    #' @return [SampData]
-    calc_amounts = function(model_obj, summ_cols = SUMM_COLS_DEFAULT) {
+    #' @return The calling object invisibly.
+    calc_amounts = function(model_obj, summ_cols = defaults$SUMM_COLS) {
       if (inherits(model_obj, "ModelBuilder")) {
         control_mc <- model_obj$predict()
         private$amount_mc <- model_obj$predict(private$ratio_mc)
@@ -163,8 +146,8 @@ SampData <- R6::R6Class(
     #' @param units (`character(1)`)
     #'   Units to use for the y-axis label. Defaults to "mu*mol ~~ mol^-1".
     #'
-    #' @return [SampData]
-    plot_data = function(units = UNITS_DEFAULT) {
+    #' @return The calling object invisibly.
+    plot_data = function(units = defaults$UNITS) {
       if (!inherits(self, "SampData_Embedded")) {
         super$plot_data()
       }
@@ -251,7 +234,7 @@ SampData <- R6::R6Class(
     #' convenient to select a specific one from the function call, i.e.
     #' `get_mc()$response_mc`.
     #'
-    #' @return `list()`
+    #' @return A `list` of attributes.
     get_mc = function() {
       rlang::list2(!!!super$get_mc(), amount_mc = private$amount_mc)
     },
@@ -265,7 +248,7 @@ SampData <- R6::R6Class(
     #' convenient to select a specific one from the function call, i.e.
     #' `get_data()$cleaned_data`.
     #'
-    #' @return `list()`
+    #' @return A `list` of attributes.
     get_data = function() {
       rlang::list2(!!!super$get_data(), amounts = private$amounts)
     },
@@ -279,12 +262,24 @@ SampData <- R6::R6Class(
     #' to select a specific one from the function call, i.e.
     #' `get_plots()$break_set_plot`.
     #'
-    #' @return `list()`
+    #' @return A `list` of attributes.
     get_plots = function() {
       rlang::list2(
         !!!super$get_plots(),
         amount_violin_plot = private$amount_violin_plot
       )
     }
+  ),
+  private = list(
+    # `matrix`: Monte Carlo samples for calculated amount fractions.
+    amount_mc = NULL,
+
+    # [tibble::tibble] Calculated amount fractions and their associated
+    # uncertainties based on the calibration model.
+    amounts = NULL,
+
+    # [ggplot2::ggplot] Plot of the distributions of the amount fraction MC
+    # samples for each sample.
+    amount_violin_plot = NULL
   )
 )

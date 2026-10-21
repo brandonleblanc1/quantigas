@@ -1,50 +1,32 @@
-#' @title
-#' SampData_PGVP Class
+#' [R6::R6Class] for Sample Data
 #'
-#' @description
-#' Derived [R6::R6Class] for sample data from COGAS. This class specifically
-#' deals with PGVP data for unknown samples and determining how accurate the
-#' vendor's value is. It inherits from the [SampData] class and thus has access
-#' to its public and private attributes and methods.
+#' Derived class for processing data from COGAS. Specifically deals with PGVP
+#' data for unknown samples and determining how accurate the vendor's value is.
+#' It inherits from the [SampData] class and thus has access to its public and
+#' private attributes and methods.
 #'
-#' @examples
+#' @export
 SampData_PGVP <- R6::R6Class(
   classname = "SampData_PGVP",
   lock_class = TRUE,
   inherit = SampData,
-  private = list(
-    #' @field vendor_data (`data.frame()`)
-    #' Vendor data for cylinders being analyzed.
-    vendor_data = NULL,
-
-    #' @field vendor_results (`data.frame()`)
-    #' Results of vendor analyses compared to NIST analyses.
-    vendor_results = NULL,
-
-    #' @field percent_diff_plot ([ggplot2::ggplot])
-    #' Plot of the calculated percent differences for each sample.
-    percent_diff_plot = NULL,
-
-    #' @field vendor_results_plot ([ggplot2::ggplot])
-    #' Plot of the vendor and NIST amount fractions for each sample.
-    vendor_results_plot = NULL
-  ),
   public = list(
     #' @description
-    #' Create a New [SampData_PGVP] Object
+    #' Create a New `SampData_PGVP` Object
     #'
-    #' @param params (`list()`)
+    #' @param params (`list`)
     #'   Parameters to initialize a [SampData] object. Must also include a
-    #'   `data.frame()` named `vendor_data` containing the following columns:
+    #'   `data.frame` or [tibble::tibble] named `vendor_data` containing the
+    #'   following columns:
     #'
-    #'   * producer (`character()`): producer names,
-    #'   * pgvp_id (`character()`): PGVP id for producer,
-    #'   * sample_id (`character()`): sample ids,
-    #'   * vendor_amount (`numeric()`): vendor amount fractions,
-    #'   * vendor_u (`numeric()`): expanded uncertainties associated with the
+    #'   * producer (`character`): producer names,
+    #'   * pgvp_id (`character`): PGVP id for producer,
+    #'   * sample_id (`character`): sample ids,
+    #'   * vendor_amount (`numeric`): vendor amount fractions,
+    #'   * vendor_u (`numeric`): expanded uncertainties associated with the
     #'   amount fractions.
     #'
-    #' @return [SampData_PGVP]
+    #' @return A new `SampData_PGVP` object.
     initialize = function(params) {
       # Expected columns to check `vendor_data` against.
       expected_cols <- c(
@@ -78,19 +60,19 @@ SampData_PGVP <- R6::R6Class(
     },
 
     #' @description
-    #' Print [SampData_PGVP] Object
+    #' Print Object
     #'
-    #' @return [SampData_PGVP]
+    #' @return The calling object invisibly.
     print = function() {
       super$print()
 
       cat(
         "<SampData_PGVP>\n",
         "  Private Attributes:\n",
-        "    vendor data: tibble [",
+        "    vendor data: tbl_df [",
         paste0(dim(private$vendor_data), collapse = " x "),
         "]\n",
-        "    vendor results: tibble [",
+        "    vendor results: tbl_df [",
         paste0(dim(private$vendor_results), collapse = " x "),
         "]\n",
         "    percent diff plot: ",
@@ -107,13 +89,14 @@ SampData_PGVP <- R6::R6Class(
     #' Calculate Amount Fractions
     #'
     #' @details
-    #' The parameters needed in the call to `super$calc_amounts()` must be
+    #' The parameters needed in the call to
+    #' [`SampData$calc_amounts()`][SampData#method-calc_amounts] must be
     #' passed through `...`. The function additionally calculates the percent
     #' differences of the vendor results to the calculated NIST results.
     #'
-    #' @param ... Additional named arguments to pass to `super$calc_amounts()`.
+    #' @param ... Additional named arguments.
     #'
-    #' @return [SampData_PGVP]
+    #' @return The calling object invisibly.
     calc_amounts = function(...) {
       super$calc_amounts(...)
 
@@ -144,8 +127,8 @@ SampData_PGVP <- R6::R6Class(
     #' @param units (`character(1)`)
     #'   Units to use for the y-axis label. Defaults to "mu*mol ~~ mol^-1".
     #'
-    #' @return [SampData_PGVP]
-    plot_data = function(units = UNITS_DEFAULT) {
+    #' @return The calling object invisibly.
+    plot_data = function(units = defaults$UNITS) {
       if (!is.null(private$vendor_results)) {
         super$plot_data(units)
 
@@ -216,7 +199,7 @@ SampData_PGVP <- R6::R6Class(
     #' convenient to select a specific one from the function call, i.e.
     #' `get_data()$cleaned_data`.
     #'
-    #' @return `list()`
+    #' @return A `list` of attributes.
     get_data = function() {
       rlang::list2(
         !!!super$get_data(),
@@ -234,7 +217,7 @@ SampData_PGVP <- R6::R6Class(
     #' to select a specific one from the function call, i.e.
     #' `get_plots()$break_set_plot`.
     #'
-    #' @return `list()`
+    #' @return A `list` of attributes.
     get_plots = function() {
       rlang::list2(
         !!!super$get_plots(),
@@ -242,5 +225,20 @@ SampData_PGVP <- R6::R6Class(
         vendor_results_plot = private$vendor_results_plot
       )
     }
+  ),
+  private = list(
+    # [tibble::tibble]: Vendor data for cylinders being analyzed.
+    vendor_data = NULL,
+
+    # [tibble::tibble]: Results of vendor analyses compared to NIST analyses.
+    vendor_results = NULL,
+
+    # [ggplot2::ggplot]: Plot of the calculated percent differences for each
+    # sample.
+    percent_diff_plot = NULL,
+
+    # [ggplot2::ggplot]: Plot of the vendor and NIST amount fractions for
+    # each sample.
+    vendor_results_plot = NULL
   )
 )
