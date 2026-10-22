@@ -9,18 +9,18 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Config/roxygen2/version: 8.1.1
 Imports: 
-    R6
-    rlang
-    magrittr
-    dplyr
-    tidyr
-    stringr
-    readr
-    forcats
-    purrr
-    furrr
-    future
-    robustbase
-    nloptr
-    ggplot2
+    R6,
+    rlang,
+    magrittr,
+    dplyr,
+    tidyr,
+    stringr,
+    readr,
+    forcats,
+    purrr,
+    furrr,
+    future,
+    robustbase,
+    nloptr,
+    ggplot2,
     ggthemes
