@@ -12,7 +12,7 @@ COGASData <- R6::R6Class(
   public = list(
     #' @description
     #' Create a new `COGASData` object. Automatically calls
-    #' [`clean_data()`](#method-COGASData-clean_data).
+    #' [`clean_data()`](#method-clean_data).
     #'
     #' @param params (`list`)
     #'   Parameters pertaining to the current analysis. Must contain the

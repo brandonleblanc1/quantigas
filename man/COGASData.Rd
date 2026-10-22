@@ -30,7 +30,7 @@ measurements. This object is typically constructed via its derived classes,
 \if{latex}{\out{\hypertarget{method-COGASData-initialize}{}}}
 \subsection{\code{COGASData$new()}}{
   Create a new \code{COGASData} object. Automatically calls
-\href{#method-COGASData-clean_data}{\code{clean_data()}}.
+\href{#method-clean_data}{\code{clean_data()}}.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{COGASData$new(params)}
