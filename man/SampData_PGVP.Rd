@@ -88,8 +88,8 @@ amount fractions.
   Calculate amount fractions and uncertainties for unknown samples, and
 additionally calculate percent differences of the vendor results to the
 calculated NIST results. The parameters needed in the call to
-\href{#method-SampData-calc_amounts}{\code{SampData$calc_amounts()}} must be
-passed through \code{...}.
+\href{SampData#method-SampData-calc_amounts}{\code{SampData$calc_amounts()}}
+must be passed through \code{...}.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{SampData_PGVP$calc_amounts(...)}

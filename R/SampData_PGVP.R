@@ -89,8 +89,8 @@ SampData_PGVP <- R6::R6Class(
     #' Calculate amount fractions and uncertainties for unknown samples, and
     #' additionally calculate percent differences of the vendor results to the
     #' calculated NIST results. The parameters needed in the call to
-    #' [`SampData$calc_amounts()`](#method-SampData-calc_amounts) must be
-    #' passed through `...`.
+    #' [`SampData$calc_amounts()`](SampData#method-SampData-calc_amounts)
+    #' must be passed through `...`.
     #'
     #' @param ... Additional named arguments.
     #'

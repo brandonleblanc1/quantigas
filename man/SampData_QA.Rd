@@ -86,7 +86,8 @@ fractions
   Calculate amount fractions and uncertainties for unknown samples, and
 additionally calculate differences between the certified amount
 fractions and the current calculations. The parameters needed in the
-call to \href{#method-SampData-calc_amounts}{\code{SampData$calc_amounts()}} must
+call to
+\href{SampData#method-SampData-calc_amounts}{\code{SampData$calc_amounts()}} must
 be passed through \code{...}.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}

@@ -78,7 +78,8 @@ SampData_QA <- R6::R6Class(
     #' Calculate amount fractions and uncertainties for unknown samples, and
     #' additionally calculate differences between the certified amount
     #' fractions and the current calculations. The parameters needed in the
-    #' call to [`SampData$calc_amounts()`](#method-SampData-calc_amounts) must
+    #' call to
+    #' [`SampData$calc_amounts()`](SampData#method-SampData-calc_amounts) must
     #' be passed through `...`.
     #'
     #' @param ... Additional named arguments.
