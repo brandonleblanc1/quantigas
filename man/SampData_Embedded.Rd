@@ -10,7 +10,7 @@ with the calibration data. It inherits from the \link{SampData} class and thus
 has access to its public and private attributes and methods.
 }
 \section{Super classes}{
-\code{\link[quantigas:COGASData]{COGASData}} -> \code{\link[quantigas:SampData]{SampData}} -> \code{SampData_Embedded}
+\code{COGASData} -> \code{SampData} -> \code{SampData_Embedded}
 }
 \section{Methods}{
 \subsection{Public methods}{
@@ -21,16 +21,16 @@ has access to its public and private attributes and methods.
 }
 \if{html}{\out{<details><summary>Inherited methods</summary>
 <ul>
-  <li><span class="pkg-link" data-pkg="quantigas" data-topic="COGASData" data-id="get_info"><a href='../../quantigas/html/COGASData.html#method-COGASData-get_info'><code>COGASData$get_info()</code></a></span></li>
-  <li><span class="pkg-link" data-pkg="quantigas" data-topic="COGASData" data-id="save_object"><a href='../../quantigas/html/COGASData.html#method-COGASData-save_object'><code>COGASData$save_object()</code></a></span></li>
-  <li><span class="pkg-link" data-pkg="quantigas" data-topic="COGASData" data-id="summarize_data"><a href='../../quantigas/html/COGASData.html#method-COGASData-summarize_data'><code>COGASData$summarize_data()</code></a></span></li>
-  <li><span class="pkg-link" data-pkg="quantigas" data-topic="SampData" data-id="calc_amounts"><a href='../../quantigas/html/SampData.html#method-SampData-calc_amounts'><code>SampData$calc_amounts()</code></a></span></li>
-  <li><span class="pkg-link" data-pkg="quantigas" data-topic="SampData" data-id="get_data"><a href='../../quantigas/html/SampData.html#method-SampData-get_data'><code>SampData$get_data()</code></a></span></li>
-  <li><span class="pkg-link" data-pkg="quantigas" data-topic="SampData" data-id="get_mc"><a href='../../quantigas/html/SampData.html#method-SampData-get_mc'><code>SampData$get_mc()</code></a></span></li>
-  <li><span class="pkg-link" data-pkg="quantigas" data-topic="SampData" data-id="get_plots"><a href='../../quantigas/html/SampData.html#method-SampData-get_plots'><code>SampData$get_plots()</code></a></span></li>
-  <li><span class="pkg-link" data-pkg="quantigas" data-topic="SampData" data-id="initialize"><a href='../../quantigas/html/SampData.html#method-SampData-initialize'><code>SampData$initialize()</code></a></span></li>
-  <li><span class="pkg-link" data-pkg="quantigas" data-topic="SampData" data-id="plot_data"><a href='../../quantigas/html/SampData.html#method-SampData-plot_data'><code>SampData$plot_data()</code></a></span></li>
-  <li><span class="pkg-link" data-pkg="quantigas" data-topic="SampData" data-id="print"><a href='../../quantigas/html/SampData.html#method-SampData-print'><code>SampData$print()</code></a></span></li>
+  <li><code>COGASData$get_info()</code></li>
+  <li><code>COGASData$save_object()</code></li>
+  <li><code>COGASData$summarize_data()</code></li>
+  <li><code>SampData$calc_amounts()</code></li>
+  <li><code>SampData$get_data()</code></li>
+  <li><code>SampData$get_mc()</code></li>
+  <li><code>SampData$get_plots()</code></li>
+  <li><code>SampData$initialize()</code></li>
+  <li><code>SampData$plot_data()</code></li>
+  <li><code>SampData$print()</code></li>
 </ul>
 </details>}}
 \if{html}{\out{<hr>}}

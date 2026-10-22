@@ -10,7 +10,7 @@ It inherits from the \link{SampData} class and thus has access to its public and
 private attributes and methods.
 }
 \section{Super classes}{
-\code{\link[quantigas:COGASData]{COGASData}} -> \code{\link[quantigas:SampData]{SampData}} -> \code{SampData_PGVP}
+\code{COGASData} -> \code{SampData} -> \code{SampData_PGVP}
 }
 \section{Methods}{
 \subsection{Public methods}{
@@ -26,11 +26,11 @@ private attributes and methods.
 }
 \if{html}{\out{<details open><summary>Inherited methods</summary>
 <ul>
-  <li><span class="pkg-link" data-pkg="quantigas" data-topic="COGASData" data-id="clean_data"><a href='../../quantigas/html/COGASData.html#method-COGASData-clean_data'><code>COGASData$clean_data()</code></a></span></li>
-  <li><span class="pkg-link" data-pkg="quantigas" data-topic="COGASData" data-id="get_info"><a href='../../quantigas/html/COGASData.html#method-COGASData-get_info'><code>COGASData$get_info()</code></a></span></li>
-  <li><span class="pkg-link" data-pkg="quantigas" data-topic="COGASData" data-id="save_object"><a href='../../quantigas/html/COGASData.html#method-COGASData-save_object'><code>COGASData$save_object()</code></a></span></li>
-  <li><span class="pkg-link" data-pkg="quantigas" data-topic="COGASData" data-id="summarize_data"><a href='../../quantigas/html/COGASData.html#method-COGASData-summarize_data'><code>COGASData$summarize_data()</code></a></span></li>
-  <li><span class="pkg-link" data-pkg="quantigas" data-topic="SampData" data-id="get_mc"><a href='../../quantigas/html/SampData.html#method-SampData-get_mc'><code>SampData$get_mc()</code></a></span></li>
+  <li><code>COGASData$clean_data()</code></li>
+  <li><code>COGASData$get_info()</code></li>
+  <li><code>COGASData$save_object()</code></li>
+  <li><code>COGASData$summarize_data()</code></li>
+  <li><code>SampData$get_mc()</code></li>
 </ul>
 </details>}}
 \if{html}{\out{<hr>}}

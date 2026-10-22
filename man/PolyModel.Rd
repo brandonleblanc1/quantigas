@@ -10,7 +10,7 @@ function. It inherits from the \link{ModelBuilder} class and thus has access to
 its public and private attributes and methods.
 }
 \section{Super class}{
-\code{\link[quantigas:ModelBuilder]{ModelBuilder}} -> \code{PolyModel}
+\code{ModelBuilder} -> \code{PolyModel}
 }
 \section{Methods}{
 \subsection{Public methods}{
@@ -25,7 +25,7 @@ its public and private attributes and methods.
 }
 \if{html}{\out{<details open><summary>Inherited methods</summary>
 <ul>
-  <li><span class="pkg-link" data-pkg="quantigas" data-topic="ModelBuilder" data-id="save_object"><a href='../../quantigas/html/ModelBuilder.html#method-ModelBuilder-save_object'><code>ModelBuilder$save_object()</code></a></span></li>
+  <li><code>ModelBuilder$save_object()</code></li>
 </ul>
 </details>}}
 \if{html}{\out{<hr>}}

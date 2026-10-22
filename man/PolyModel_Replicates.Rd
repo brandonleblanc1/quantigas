@@ -10,7 +10,7 @@ from the \link{PolyModel} class and thus has access to its public and private
 attributes and methods.
 }
 \section{Super classes}{
-\code{\link[quantigas:ModelBuilder]{ModelBuilder}} -> \code{\link[quantigas:PolyModel]{PolyModel}} -> \code{PolyModel_Replicates}
+\code{ModelBuilder} -> \code{PolyModel} -> \code{PolyModel_Replicates}
 }
 \section{Methods}{
 \subsection{Public methods}{
@@ -28,9 +28,9 @@ attributes and methods.
 }
 \if{html}{\out{<details open><summary>Inherited methods</summary>
 <ul>
-  <li><span class="pkg-link" data-pkg="quantigas" data-topic="ModelBuilder" data-id="save_object"><a href='../../quantigas/html/ModelBuilder.html#method-ModelBuilder-save_object'><code>ModelBuilder$save_object()</code></a></span></li>
-  <li><span class="pkg-link" data-pkg="quantigas" data-topic="PolyModel" data-id="get_plots"><a href='../../quantigas/html/PolyModel.html#method-PolyModel-get_plots'><code>PolyModel$get_plots()</code></a></span></li>
-  <li><span class="pkg-link" data-pkg="quantigas" data-topic="PolyModel" data-id="plot_model"><a href='../../quantigas/html/PolyModel.html#method-PolyModel-plot_model'><code>PolyModel$plot_model()</code></a></span></li>
+  <li><code>ModelBuilder$save_object()</code></li>
+  <li><code>PolyModel$get_plots()</code></li>
+  <li><code>PolyModel$plot_model()</code></li>
 </ul>
 </details>}}
 \if{html}{\out{<hr>}}
