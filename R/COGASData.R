@@ -11,10 +11,8 @@ COGASData <- R6::R6Class(
   lock_class = TRUE,
   public = list(
     #' @description
-    #' Create a New `COGASData` Object
-    #'
-    #' @details
-    #' Automatically calls [`clean_data()`](#method-clean_data).
+    #' Create a new `COGASData` object. Automatically calls
+    #' [`clean_data()`](#method-clean_data).
     #'
     #' @param params (`list`)
     #'   Parameters pertaining to the current analysis. Must contain the
@@ -68,7 +66,7 @@ COGASData <- R6::R6Class(
     },
 
     #' @description
-    #' Print Object
+    #' Print useful information about the state of the object.
     #'
     #' @return The calling object invisibly.
     print = function() {
@@ -125,14 +123,11 @@ COGASData <- R6::R6Class(
     },
 
     #' @description
-    #' Clean Data
-    #'
-    #' @details
-    #' This function reads in and cleans the data from the current analysis.
-    #' Currently only has support for reading data from a CSV file containing
-    #' all of the raw data scraped from a COGAS Excel workbook. Based on the
-    #' instrument used, compound of interest, and data collection method,
-    #' different data operations may be performed.
+    #' Read in and clean the data from the current analysis. Currently only has
+    #' support for reading data from a CSV file containing all of the raw data
+    #' scraped from a COGAS Excel workbook. Based on the instrument used,
+    #' compound of interest, and data collection method, different data
+    #' operations may be performed.
     #'
     #' One thing to note is that unless an entire break set went awry, any data
     #' being discarded from the analysis should be left intact with the rest of
@@ -177,12 +172,8 @@ COGASData <- R6::R6Class(
     },
 
     #' @description
-    #' Summarize Data
-    #'
-    #' @details
-    #' This function takes the cleaned data from the current analysis and
-    #' computes summary statistics according to the supplied grouping
-    #' variables.
+    #' Compute summary statistics on the cleaned data according to the supplied
+    #' grouping variables.
     #'
     #' @param summ_cols (`character`)
     #'   Variables to group by when performing calculation. Defaults to
@@ -212,11 +203,7 @@ COGASData <- R6::R6Class(
     },
 
     #' @description
-    #' Plot Data
-    #'
-    #' @details
-    #' This function generates useful diagnostic plots for the data from the
-    #' current analysis.
+    #' Generate useful diagnostic plots for the current analysis.
     #'
     #' @return The calling object invisibly.
     plot_data = function() {
@@ -331,13 +318,10 @@ COGASData <- R6::R6Class(
     },
 
     #' @description
-    #' Get Analysis Info
-    #'
-    #' @details
-    #' This functions returns a list of all private attributes that contain
-    #' information related to the analysis. If all attributes are not needed at
-    #' the same time, it can be convenient to select a specific one from the
-    #' function call, i.e. `get_info()$instrument`.
+    #' Get all private attributes that contain general information on the
+    #' analysis. If all attributes are not needed at the same time, it can be
+    #' convenient to select a specific one from the function call, i.e.
+    #' `get_info()$instrument`.
     #'
     #' @return A `list` of attributes.
     get_info = function() {
@@ -353,13 +337,9 @@ COGASData <- R6::R6Class(
     },
 
     #' @description
-    #' Get MC Samples
-    #'
-    #' @details
-    #' This function returns a list of all private attributes containing MC
-    #' samples. If all attributes are not needed at the same time, it can be
-    #' convenient to select a specific one from the function call, i.e.
-    #' `get_mc()$response_mc`.
+    #' Get all private attributes containing MC samples. If all attributes are
+    #' not needed at the same time, it can be convenient to select a specific
+    #' one from the function call, i.e. `get_mc()$response_mc`.
     #'
     #' @return A `list` of attributes.
     get_mc = function() {
@@ -371,13 +351,9 @@ COGASData <- R6::R6Class(
     },
 
     #' @description
-    #' Get Data Frames
-    #'
-    #' @details
-    #' This function returns a list of all private attributes that are data
-    #' frames. If all attributes are not needed at the same time, it can be
-    #' convenient to select a specific one from the function call, i.e.
-    #' `get_data()$cleaned_data`.
+    #' Get all private attributes that are data frames. If all attributes are
+    #' not needed at the same time, it can be convenient to select a specific
+    #' one from the function call, i.e. `get_data()$cleaned_data`.
     #'
     #' @return A `list` of attributes.
     get_data = function() {
@@ -389,13 +365,9 @@ COGASData <- R6::R6Class(
     },
 
     #' @description
-    #' Get Plots
-    #'
-    #' @details
-    #' This function returns a list of all private attributes that are plots.
-    #' If all attributes are not needed at the same time, it can be convenient
-    #' to select a specific one from the function call, i.e.
-    #' `get_plots()$break_set_plot`.
+    #' Get all private attributes that are plot objects. If all attributes are
+    #' not needed at the same time, it can be convenient to select a specific
+    #' one from the function call, i.e. `get_plots()$break_set_plot`.
     #'
     #' @return A `list` of attributes.
     get_plots = function() {
@@ -406,10 +378,7 @@ COGASData <- R6::R6Class(
     },
 
     #' @description
-    #' Save Object
-    #'
-    #' @details
-    #' This function saves the object as an RDS file.
+    #' Save the object to an RDS file.
     #'
     #' @param filepath (`character(1)`)
     #'   Path to save the object to.

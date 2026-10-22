@@ -10,7 +10,7 @@ ModelBuilder <- R6::R6Class(
   lock_class = TRUE,
   public = list(
     #' @description
-    #' Print Object
+    #' Print useful information about the state of the object.
     #'
     #' @return The calling object invisibly.
     print = function() {
@@ -30,13 +30,9 @@ ModelBuilder <- R6::R6Class(
     },
 
     #' @description
-    #' Get Data Frames
-    #'
-    #' @details
-    #' This function returns a list of all private attributes that are data
-    #' frames. If all attributes are not needed at the same time, it can be
-    #' convenient to select a specific one from the function call, i.e.
-    #' `get_data()$cal_data`.
+    #' Get all private attributes that are data frames. If all attributes are
+    #' not needed at the same time, it can be convenient to select a specific
+    #' one from the function call, i.e. `get_data()$cal_data`.
     #'
     #' @return A `list` of attributes.
     get_data = function() {
@@ -44,10 +40,7 @@ ModelBuilder <- R6::R6Class(
     },
 
     #' @description
-    #' Save Object
-    #'
-    #' @details
-    #' This function saves the object as an RDS file.
+    #' Save the object to an RDS file.
     #'
     #' @param filepath (`character(1)`)
     #'   Path to save the object to.

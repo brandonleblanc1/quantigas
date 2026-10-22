@@ -13,7 +13,7 @@ CalData <- R6::R6Class(
   inherit = COGASData,
   public = list(
     #' @description
-    #' Create a New `CalData` Object
+    #' Create a new `CalData` object.
     #'
     #' @param params (`list`)
     #'   Parameters to initialize a [COGASData] object. Must also include a
@@ -55,7 +55,7 @@ CalData <- R6::R6Class(
     },
 
     #' @description
-    #' Print Object
+    #' Print useful information about the state of the object.
     #'
     #' @return The calling object invisibly.
     print = function() {
@@ -74,13 +74,9 @@ CalData <- R6::R6Class(
     },
 
     #' @description
-    #' Get Data Frames
-    #'
-    #' @details
-    #' This function returns a list of all private attributes that are data
-    #' frames. If all attributes are not needed at the same time, it can be
-    #' convenient to select a specific one from the function call, i.e.
-    #' `get_data()$cleaned_data`.
+    #' Get all private attributes that are data frames. If all attributes are
+    #' not needed at the same time, it can be convenient to select a specific
+    #' one from the function call, i.e. `get_data()$cleaned_data`.
     #'
     #' @return A `list` of attributes.
     get_data = function() {

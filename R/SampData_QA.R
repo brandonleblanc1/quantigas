@@ -12,7 +12,7 @@ SampData_QA <- R6::R6Class(
   inherit = SampData,
   public = list(
     #' @description
-    #' Create a New `SampData_QA` Object
+    #' Create a new `SampData_QA` object.
     #'
     #' @param params (`list`)
     #'   Parameters to initialize a [COGASData] object. Must also include a
@@ -54,7 +54,7 @@ SampData_QA <- R6::R6Class(
     },
 
     #' @description
-    #' Print Object
+    #' Print useful information about the state of the object.
     #'
     #' @return The calling object invisibly.
     print = function() {
@@ -75,13 +75,11 @@ SampData_QA <- R6::R6Class(
     },
 
     #' @description
-    #' Calculate Amount Fractions
-    #'
-    #' @details
-    #' The parameters needed in the call to
-    #' [`SampData$calc_amounts()`](SampData#method-calc_amounts) must be
-    #' passed through `...`. The function additionally calculates differences
-    #' between the certified amount fractions and the current calculations.
+    #' Calculate amount fractions and uncertainties for unknown samples, and
+    #' additionally calculate differences between the certified amount
+    #' fractions and the current calculations. The parameters needed in the
+    #' call to [`SampData$calc_amounts()`](#method-SampData-calc_amounts) must
+    #' be passed through `...`.
     #'
     #' @param ... Additional named arguments.
     #'
@@ -102,11 +100,7 @@ SampData_QA <- R6::R6Class(
     },
 
     #' @description
-    #' Plot Data
-    #'
-    #' @details
-    #' This function generates useful diagnostic plots for the data from the
-    #' current analysis.
+    #' Generate useful diagnostic plots for the current analysis.
     #'
     #' @param units (`character(1)`)
     #'   Units to use for the y-axis label. Defaults to "mu*mol ~~ mol^-1".
@@ -156,13 +150,9 @@ SampData_QA <- R6::R6Class(
     },
 
     #' @description
-    #' Get Data Frames
-    #'
-    #' @details
-    #' This function returns a list of all private attributes that are data
-    #' frames. If all attributes are not needed at the same time, it can be
-    #' convenient to select a specific one from the function call, i.e.
-    #' `get_data()$cleaned_data`.
+    #' Get all private attributes that are data frames. If all attributes are
+    #' not needed at the same time, it can be convenient to select a specific
+    #' one from the function call, i.e. `get_data()$cleaned_data`.
     #'
     #' @return A `list` of attributes.
     get_data = function() {
@@ -170,13 +160,9 @@ SampData_QA <- R6::R6Class(
     },
 
     #' @description
-    #' Get Plots
-    #'
-    #' @details
-    #' This function returns a list of all private attributes that are plots.
-    #' If all attributes are not needed at the same time, it can be convenient
-    #' to select a specific one from the function call, i.e.
-    #' `get_plots()$break_set_plot`.
+    #' Get all private attributes that are plot objects. If all attributes are
+    #' not needed at the same time, it can be convenient to select a specific
+    #' one from the function call, i.e. `get_plots()$break_set_plot`.
     #'
     #' @return A `list` of attributes.
     get_plots = function() {

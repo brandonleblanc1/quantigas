@@ -12,7 +12,7 @@ SampData <- R6::R6Class(
   inherit = COGASData,
   public = list(
     #' @description
-    #' Create a New `SampData` Object
+    #' Create a new `SampData` object.
     #'
     #' @param params (`list`)
     #'   Parameters to initialize a [COGASData] object. The private attributes
@@ -50,7 +50,7 @@ SampData <- R6::R6Class(
     },
 
     #' @description
-    #' Print Object
+    #' Print useful information about the state of the object.
     #'
     #' @return The calling object invisibly.
     print = function() {
@@ -74,15 +74,11 @@ SampData <- R6::R6Class(
     },
 
     #' @description
-    #' Calculate Amount Fractions
-    #'
-    #' @details
-    #' This function calculates the amount fractions and uncertainties for
-    #' unknown samples based on either a calibration model for multi-point
-    #' calibration or through a one-to-one comparison with the control sample
-    #' for single-point calibration. The final amount fractions are estimated
-    #' from the ratio MC samples that were used in the ratio uncertainty
-    #' calculation.
+    #' Calculate amount fractions and uncertainties for unknown samples based
+    #' on either a calibration model for multi-point calibration or through a
+    #' one-to-one comparison with the control sample for single-point
+    #' calibration. The final amount fractions are estimated from the ratio MC
+    #' samples that were used in the ratio uncertainty calculation.
     #'
     #' @param model_obj ([ModelBuilder] | `numeric` | [tibble::tibble])
     #'   Calibration model object, or a vector/list/data frame containing the
@@ -137,11 +133,7 @@ SampData <- R6::R6Class(
     },
 
     #' @description
-    #' Plot Data
-    #'
-    #' @details
-    #' This function generates useful diagnostic plots for the data from the
-    #' current analysis.
+    #' Generate useful diagnostic plots for the current analysis.
     #'
     #' @param units (`character(1)`)
     #'   Units to use for the y-axis label. Defaults to "mu*mol ~~ mol^-1".
@@ -226,13 +218,9 @@ SampData <- R6::R6Class(
     },
 
     #' @description
-    #' Get MC Samples
-    #'
-    #' @details
-    #' This function returns a list of all private attributes containing MC
-    #' samples. If all attributes are not needed at the same time, it can be
-    #' convenient to select a specific one from the function call, i.e.
-    #' `get_mc()$response_mc`.
+    #' Get all private attributes containing MC samples. If all attributes are
+    #' not needed at the same time, it can be convenient to select a specific
+    #' one from the function call, i.e. `get_mc()$response_mc`.
     #'
     #' @return A `list` of attributes.
     get_mc = function() {
@@ -240,13 +228,9 @@ SampData <- R6::R6Class(
     },
 
     #' @description
-    #' Get Data Frames
-    #'
-    #' @details
-    #' This function returns a list of all private attributes that are data
-    #' frames. If all attributes are not needed at the same time, it can be
-    #' convenient to select a specific one from the function call, i.e.
-    #' `get_data()$cleaned_data`.
+    #' Get all private attributes that are data frames. If all attributes are
+    #' not needed at the same time, it can be convenient to select a specific
+    #' one from the function call, i.e. `get_data()$cleaned_data`.
     #'
     #' @return A `list` of attributes.
     get_data = function() {
@@ -254,13 +238,9 @@ SampData <- R6::R6Class(
     },
 
     #' @description
-    #' Get Plots
-    #'
-    #' @details
-    #' This function returns a list of all private attributes that are plots.
-    #' If all attributes are not needed at the same time, it can be convenient
-    #' to select a specific one from the function call, i.e.
-    #' `get_plots()$break_set_plot`.
+    #' Get all private attributes that are plot objects. If all attributes are
+    #' not needed at the same time, it can be convenient to select a specific
+    #' one from the function call, i.e. `get_plots()$break_set_plot`.
     #'
     #' @return A `list` of attributes.
     get_plots = function() {

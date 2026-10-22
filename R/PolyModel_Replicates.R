@@ -12,7 +12,7 @@ PolyModel_Replicates <- R6::R6Class(
   inherit = PolyModel,
   public = list(
     #' @description
-    #' Create a New `PolyModel_Replicates` Object
+    #' Create a new `PolyModel_Replicates` object.
     #'
     #' @param cal_obj ([CalData])
     #'   Calibration data object.
@@ -70,7 +70,7 @@ PolyModel_Replicates <- R6::R6Class(
     },
 
     #' @description
-    #' Print Object
+    #' Print useful information about the state of the object.
     #'
     #' @return The calling object invisibly.
     print = function() {
@@ -101,17 +101,14 @@ PolyModel_Replicates <- R6::R6Class(
     },
 
     #' @description
-    #' Model Selection
-    #'
-    #' @details
-    #' This function builds the candidate polynomial models and runs the
-    #' optimization algorithm for each to assess their fit of the data. It also
-    #' generates residual plots for each candidate model. The best model has
-    #' the smallest signed value of AIC, BIC, or both; however, the model
-    #' selected for use is usually the one in which the values of AIC and BIC
-    #' show their first substantial drop as model complexity increases. These
-    #' statistical criteria should be taken into account in conjunction with the
-    #' residual plots, which should show no discernable patterns.
+    #' Build candidate polynomial models and run the optimization algorithm for
+    #' each to assess their fit of the data. It also generates residual plots
+    #' for each candidate model. The best model has the smallest signed value
+    #' of AIC, BIC, or both; however, the model selected for use is usually the
+    #' one in which the values of AIC and BIC show their first substantial drop
+    #' as model complexity increases. These statistical criteria should be
+    #' taken into account in conjunction with the residual plots, which should
+    #' show no discernable patterns.
     #'
     #' @return The calling object invisibly.
     model_selection = function() {
@@ -175,10 +172,7 @@ PolyModel_Replicates <- R6::R6Class(
     },
 
     #' @description
-    #' Monte Carlo Uncertainty Simulation
-    #'
-    #' @details
-    #' This function performs a simulation on the chosen candidate model to
+    #' Perform a Monte Carlo simulation on the selected candidate model to
     #' propagate measurement uncertainty through the analysis function using
     #' the replicate MC samples of the calibration object. Assumes the certified
     #' amount fractions are normally distributed.
@@ -300,12 +294,9 @@ PolyModel_Replicates <- R6::R6Class(
     },
 
     #' @description
-    #' Predict Unknowns
-    #'
-    #' @details
-    #' This function utilizes the results obtained from
-    #' [`simulate()`](#method-simulate to predict new data. MC samples are
-    #' returned and must be summarized by the caller.
+    #' Predict unknowns utilizing the results obtained from
+    #' [`simulate()`](#method-simulate). MC samples are returned and must be
+    #' summarized by the caller.
     #'
     #' @param data (NULL | `numeric` | `matrix`)
     #'   Behavior will change based on the value provided:
@@ -318,7 +309,7 @@ PolyModel_Replicates <- R6::R6Class(
     #'   with the corresponding coefficients for each power of r. Returns a
     #'   matrix.
     #'
-    #' @return A `numeric` or `matrix` with the calculated MC samples.
+    #' @return A `vector` or `matrix` with the calculated MC samples.
     predict = function(data = NULL) {
       if (is.null(private$solution_mc)) {
         self$simulate()
@@ -351,13 +342,10 @@ PolyModel_Replicates <- R6::R6Class(
     },
 
     #' @description
-    #' Get Analysis Info
-    #'
-    #' @details
-    #' This functions returns a list of all private attributes that contain
-    #' information related to the analysis. If all attributes are not needed at
-    #' the same time, it can be convenient to select a specific one from the
-    #' function call, i.e. `get_info()$n_std`.
+    #' Get all private attributes that contain general information on the
+    #' analysis. If all attributes are not needed at the same time, it can be
+    #' convenient to select a specific one from the function call, i.e.
+    #' `get_info()$n_std`.
     #'
     #' @return A `list` of attributes.
     get_info = function() {
@@ -369,13 +357,9 @@ PolyModel_Replicates <- R6::R6Class(
     },
 
     #' @description
-    #' Get MC Samples
-    #'
-    #' @details
-    #' This function returns a list of all private attributes containing MC
-    #' samples. If all attributes are not needed at the same time, it can be
-    #' convenient to select a specific one from the function call, i.e.
-    #' `get_mc()$r_mc`.
+    #' Get all private attributes containing MC samples. If all attributes are
+    #' not needed at the same time, it can be convenient to select a specific
+    #' one from the function call, i.e. `get_mc()$r_mc`.
     #'
     #' @return A `list` of attributes.
     get_mc = function() {
@@ -383,13 +367,9 @@ PolyModel_Replicates <- R6::R6Class(
     },
 
     #' @description
-    #' Get Data Frames
-    #'
-    #' @details
-    #' This function returns a list of all private attributes that are data
-    #' frames. If all attributes are not needed at the same time, it can be
-    #' convenient to select a specific one from the function call, i.e.
-    #' `get_data()$cal_data`.
+    #' Get all private attributes that are data frames. If all attributes are
+    #' not needed at the same time, it can be convenient to select a specific
+    #' one from the function call, i.e. `get_data()$cal_data`.
     #'
     #' @return A `list` of attributes.
     get_data = function() {

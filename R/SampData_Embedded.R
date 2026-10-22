@@ -12,13 +12,9 @@ SampData_Embedded <- R6::R6Class(
   inherit = SampData,
   public = list(
     #' @description
-    #' Clean Data
-    #'
-    #' @details
-    #' This function reads in and cleans the data from the current analysis. It
-    #' is explicitly reimplemented in this class to override the default
-    #' [COGASData] method and specifically pull the data for `filt_samples` out
-    #' of the calibration data.
+    #' Read in and clean the data from the current analysis. Explicitly
+    #' reimplemented here to override the default [COGASData] method and
+    #' pull the data for `filt_samples` out of the calibration data.
     #'
     #' @param cal_obj ([CalData])
     #'   Object used for handling the calibration data.

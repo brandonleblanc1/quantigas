@@ -12,7 +12,7 @@ PolyModel <- R6::R6Class(
   inherit = ModelBuilder,
   public = list(
     #' @description
-    #' Print Object
+    #' Print useful information about the state of the object.
     #'
     #' @return The calling object invisibly.
     print = function() {
@@ -53,12 +53,7 @@ PolyModel <- R6::R6Class(
     },
 
     #' @description
-    #' Plot Selected Model
-    #'
-    #' @details
-    #' This function generates a plot of the selected model's analysis function
-    #' that additionally displays information relating to the fit of the
-    #' selected model.
+    #' Plot the selected model's analysis function.
     #'
     #' @param model_num (`numeric(1)`)
     #'   Number identifying the candidate polynomial model to plot. Defaults to
@@ -170,13 +165,9 @@ PolyModel <- R6::R6Class(
     },
 
     #' @description
-    #' Get MC Samples
-    #'
-    #' @details
-    #' This function returns a list of all private attributes containing MC
-    #' samples. If all attributes are not needed at the same time, it can be
-    #' convenient to select a specific one from the function call, i.e.
-    #' `get_mc()$r_mc`.
+    #' Get all private attributes containing MC samples. If all attributes are
+    #' not needed at the same time, it can be convenient to select a specific
+    #' one from the function call, i.e. `get_mc()$r_mc`.
     #'
     #' @return A `list` of attributes.
     get_mc = function() {
@@ -188,13 +179,9 @@ PolyModel <- R6::R6Class(
     },
 
     #' @description
-    #' Get Data Frames
-    #'
-    #' @details
-    #' This function returns a list of all private attributes that are data
-    #' frames. If all attributes are not needed at the same time, it can be
-    #' convenient to select a specific one from the function call, i.e.
-    #' `get_data()$cal_data`.
+    #' Get all private attributes that are data frames. If all attributes are
+    #' not needed at the same time, it can be convenient to select a specific
+    #' one from the function call, i.e. `get_data()$cal_data`.
     #'
     #' @return A `list` of attributes.
     get_data = function() {
@@ -206,13 +193,9 @@ PolyModel <- R6::R6Class(
     },
 
     #' @description
-    #' Get Plots
-    #'
-    #' @details
-    #' This function returns a list of all private attributes that are plots.
-    #' If all attributes are not needed at the same time, it can be convenient
-    #' to select a specific one from the function call, i.e.
-    #' `get_plots()$r_resid_plot`.
+    #' Get all private attributes that are plot objects. If all attributes are
+    #' not needed at the same time, it can be convenient to select a specific
+    #' one from the function call, i.e. `get_plots()$r_resid_plot`.
     #'
     #' @return A `list` of attributes.
     get_plots = function() {
