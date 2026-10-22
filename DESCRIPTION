@@ -1,6 +1,6 @@
 Package: quantigas
 Title: Quantitative Analysis of Gas Measurement Data
-Version: 0.0.0.9000
+Version: 1.0.0
 Authors@R: 
     person("Brandon", "LeBlanc", , "brandonleblanc733@yahoo.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0001-5712-7318"))
 Description: Tools for the quantitative analysis of laboratory gas data by the Gas Sensing Metrology Group at the National Institute of Standards and Technology.
