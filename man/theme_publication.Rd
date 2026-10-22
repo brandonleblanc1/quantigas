@@ -22,7 +22,3 @@ Add a sleek publication-style theme to a \link[ggplot2:ggplot]{ggplot2::ggplot} 
 \details{
 Copied and modified from https://github.com/koundy/ggplot_theme_Publication.
 }
-\examples{
-plot_to_customize + theme_Publication()
-
-}

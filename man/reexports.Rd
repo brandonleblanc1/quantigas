@@ -4,7 +4,7 @@
 \name{reexports}
 \alias{reexports}
 \alias{\%>\%}
-\title{Re-export \link[magrittr:pipe]{magrittr::pipe}}
+\title{Re-export \link[magrittr:\%>\%]{magrittr::\%>\%}}
 \keyword{internal}
 \description{
 These objects are imported from other packages. Follow the links

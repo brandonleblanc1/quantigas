@@ -7,13 +7,6 @@
 Base class for modelling GSMG measurement data. Essentially just a container
 for comparing multiple candidate models, assessing model performance,
 predicting unknown values, and preparing useful visualizations.
-
-This function returns a list of all private attributes that are data
-frames. If all attributes are not needed at the same time, it can be
-convenient to select a specific one from the function call, i.e.
-\code{get_data()$cal_data}.
-
-This function saves the object as an RDS file.
 }
 \section{Methods}{
 \subsection{Public methods}{
@@ -28,7 +21,7 @@ This function saves the object as an RDS file.
 \if{html}{\out{<a id="method-ModelBuilder-print"></a>}}
 \if{latex}{\out{\hypertarget{method-ModelBuilder-print}{}}}
 \subsection{\code{ModelBuilder$print()}}{
-  Print Object
+  Print useful information about the state of the object.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{ModelBuilder$print()}
@@ -43,7 +36,9 @@ This function saves the object as an RDS file.
 \if{html}{\out{<a id="method-ModelBuilder-get_data"></a>}}
 \if{latex}{\out{\hypertarget{method-ModelBuilder-get_data}{}}}
 \subsection{\code{ModelBuilder$get_data()}}{
-  Get Data Frames
+  Get all private attributes that are data frames. If all attributes are
+not needed at the same time, it can be convenient to select a specific
+one from the function call, i.e. \code{get_data()$cal_data}.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{ModelBuilder$get_data()}
@@ -58,7 +53,7 @@ This function saves the object as an RDS file.
 \if{html}{\out{<a id="method-ModelBuilder-save_object"></a>}}
 \if{latex}{\out{\hypertarget{method-ModelBuilder-save_object}{}}}
 \subsection{\code{ModelBuilder$save_object()}}{
-  Save Object
+  Save the object to an RDS file.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{ModelBuilder$save_object(filepath)}

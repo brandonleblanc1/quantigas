@@ -8,25 +8,6 @@ Derived class for modelling GSMG measurement data. Specifically deals with
 building an error-in-variables model using polynomials for the analysis
 function. It inherits from the \link{ModelBuilder} class and thus has access to
 its public and private attributes and methods.
-
-This function generates a plot of the selected model's analysis function
-that additionally displays information relating to the fit of the
-selected model.
-
-This function returns a list of all private attributes containing MC
-samples. If all attributes are not needed at the same time, it can be
-convenient to select a specific one from the function call, i.e.
-\code{get_mc()$r_mc}.
-
-This function returns a list of all private attributes that are data
-frames. If all attributes are not needed at the same time, it can be
-convenient to select a specific one from the function call, i.e.
-\code{get_data()$cal_data}.
-
-This function returns a list of all private attributes that are plots.
-If all attributes are not needed at the same time, it can be convenient
-to select a specific one from the function call, i.e.
-\code{get_plots()$r_resid_plot}.
 }
 \section{Super class}{
 \code{\link[quantigas:ModelBuilder]{ModelBuilder}} -> \code{PolyModel}
@@ -51,7 +32,7 @@ to select a specific one from the function call, i.e.
 \if{html}{\out{<a id="method-PolyModel-print"></a>}}
 \if{latex}{\out{\hypertarget{method-PolyModel-print}{}}}
 \subsection{\code{PolyModel$print()}}{
-  Print Object
+  Print useful information about the state of the object.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{PolyModel$print()}
@@ -66,7 +47,7 @@ to select a specific one from the function call, i.e.
 \if{html}{\out{<a id="method-PolyModel-plot_model"></a>}}
 \if{latex}{\out{\hypertarget{method-PolyModel-plot_model}{}}}
 \subsection{\code{PolyModel$plot_model()}}{
-  Plot Selected Model
+  Plot the selected model's analysis function.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{PolyModel$plot_model(
@@ -98,7 +79,9 @@ Font family to use for plot text. Defaults to "sans".}
 \if{html}{\out{<a id="method-PolyModel-get_mc"></a>}}
 \if{latex}{\out{\hypertarget{method-PolyModel-get_mc}{}}}
 \subsection{\code{PolyModel$get_mc()}}{
-  Get MC Samples
+  Get all private attributes containing MC samples. If all attributes are
+not needed at the same time, it can be convenient to select a specific
+one from the function call, i.e. \code{get_mc()$r_mc}.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{PolyModel$get_mc()}
@@ -113,7 +96,9 @@ Font family to use for plot text. Defaults to "sans".}
 \if{html}{\out{<a id="method-PolyModel-get_data"></a>}}
 \if{latex}{\out{\hypertarget{method-PolyModel-get_data}{}}}
 \subsection{\code{PolyModel$get_data()}}{
-  Get Data Frames
+  Get all private attributes that are data frames. If all attributes are
+not needed at the same time, it can be convenient to select a specific
+one from the function call, i.e. \code{get_data()$cal_data}.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{PolyModel$get_data()}
@@ -128,7 +113,9 @@ Font family to use for plot text. Defaults to "sans".}
 \if{html}{\out{<a id="method-PolyModel-get_plots"></a>}}
 \if{latex}{\out{\hypertarget{method-PolyModel-get_plots}{}}}
 \subsection{\code{PolyModel$get_plots()}}{
-  Get Plots
+  Get all private attributes that are plot objects. If all attributes are
+not needed at the same time, it can be convenient to select a specific
+one from the function call, i.e. \code{get_plots()$r_resid_plot}.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{PolyModel$get_plots()}

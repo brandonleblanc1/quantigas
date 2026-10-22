@@ -12,6 +12,8 @@ Imports:
     R6,
     rlang,
     magrittr,
+    tibble,
+    tidyselect,
     dplyr,
     tidyr,
     stringr,

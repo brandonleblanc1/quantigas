@@ -8,24 +8,6 @@ Derived class for processing data from COGAS. Specifically deals with PGVP
 data for unknown samples and determining how accurate the vendor's value is.
 It inherits from the \link{SampData} class and thus has access to its public and
 private attributes and methods.
-
-The parameters needed in the call to
-\code{\link[=SampData#method-calc_amounts]{SampData$calc_amounts()}} must be
-passed through \code{...}. The function additionally calculates the percent
-differences of the vendor results to the calculated NIST results.
-
-This function generates useful diagnostic plots for the data from the
-current analysis.
-
-This function returns a list of all private attributes that are data
-frames. If all attributes are not needed at the same time, it can be
-convenient to select a specific one from the function call, i.e.
-\code{get_data()$cleaned_data}.
-
-This function returns a list of all private attributes that are plots.
-If all attributes are not needed at the same time, it can be convenient
-to select a specific one from the function call, i.e.
-\code{get_plots()$break_set_plot}.
 }
 \section{Super classes}{
 \code{\link[quantigas:COGASData]{COGASData}} -> \code{\link[quantigas:SampData]{SampData}} -> \code{SampData_PGVP}
@@ -55,7 +37,7 @@ to select a specific one from the function call, i.e.
 \if{html}{\out{<a id="method-SampData_PGVP-initialize"></a>}}
 \if{latex}{\out{\hypertarget{method-SampData_PGVP-initialize}{}}}
 \subsection{\code{SampData_PGVP$new()}}{
-  Create a New \code{SampData_PGVP} Object
+  Create a new \code{SampData_PGVP} object.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{SampData_PGVP$new(params)}
@@ -88,7 +70,7 @@ amount fractions.
 \if{html}{\out{<a id="method-SampData_PGVP-print"></a>}}
 \if{latex}{\out{\hypertarget{method-SampData_PGVP-print}{}}}
 \subsection{\code{SampData_PGVP$print()}}{
-  Print Object
+  Print useful information about the state of the object.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{SampData_PGVP$print()}
@@ -103,7 +85,11 @@ amount fractions.
 \if{html}{\out{<a id="method-SampData_PGVP-calc_amounts"></a>}}
 \if{latex}{\out{\hypertarget{method-SampData_PGVP-calc_amounts}{}}}
 \subsection{\code{SampData_PGVP$calc_amounts()}}{
-  Calculate Amount Fractions
+  Calculate amount fractions and uncertainties for unknown samples, and
+additionally calculate percent differences of the vendor results to the
+calculated NIST results. The parameters needed in the call to
+\href{#method-SampData-calc_amounts}{\code{SampData$calc_amounts()}} must be
+passed through \code{...}.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{SampData_PGVP$calc_amounts(...)}
@@ -125,7 +111,7 @@ amount fractions.
 \if{html}{\out{<a id="method-SampData_PGVP-plot_data"></a>}}
 \if{latex}{\out{\hypertarget{method-SampData_PGVP-plot_data}{}}}
 \subsection{\code{SampData_PGVP$plot_data()}}{
-  Plot Data
+  Generate useful diagnostic plots for the current analysis.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{SampData_PGVP$plot_data(units = defaults$UNITS)}
@@ -148,7 +134,9 @@ Units to use for the y-axis label. Defaults to "mu*mol ~~ mol^-1".}
 \if{html}{\out{<a id="method-SampData_PGVP-get_data"></a>}}
 \if{latex}{\out{\hypertarget{method-SampData_PGVP-get_data}{}}}
 \subsection{\code{SampData_PGVP$get_data()}}{
-  Get Data Frames
+  Get all private attributes that are data frames. If all attributes are
+not needed at the same time, it can be convenient to select a specific
+one from the function call, i.e. \code{get_data()$cleaned_data}.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{SampData_PGVP$get_data()}
@@ -163,7 +151,9 @@ Units to use for the y-axis label. Defaults to "mu*mol ~~ mol^-1".}
 \if{html}{\out{<a id="method-SampData_PGVP-get_plots"></a>}}
 \if{latex}{\out{\hypertarget{method-SampData_PGVP-get_plots}{}}}
 \subsection{\code{SampData_PGVP$get_plots()}}{
-  Get Plots
+  Get all private attributes that are plot objects. If all attributes are
+not needed at the same time, it can be convenient to select a specific
+one from the function call, i.e. \code{get_plots()$break_set_plot}.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{SampData_PGVP$get_plots()}

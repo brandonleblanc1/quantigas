@@ -8,31 +8,6 @@ Derived class for processing data from COGAS. Specifically deals with data
 for unknown samples and calculating/visualizing results from the calibration
 model. Inherits from the \link{COGASData} class and thus has access to its public
 and private attributes and methods.
-
-This function calculates the amount fractions and uncertainties for
-unknown samples based on either a calibration model for multi-point
-calibration or through a one-to-one comparison with the control sample
-for single-point calibration. The final amount fractions are estimated
-from the ratio MC samples that were used in the ratio uncertainty
-calculation.
-
-This function generates useful diagnostic plots for the data from the
-current analysis.
-
-This function returns a list of all private attributes containing MC
-samples. If all attributes are not needed at the same time, it can be
-convenient to select a specific one from the function call, i.e.
-\code{get_mc()$response_mc}.
-
-This function returns a list of all private attributes that are data
-frames. If all attributes are not needed at the same time, it can be
-convenient to select a specific one from the function call, i.e.
-\code{get_data()$cleaned_data}.
-
-This function returns a list of all private attributes that are plots.
-If all attributes are not needed at the same time, it can be convenient
-to select a specific one from the function call, i.e.
-\code{get_plots()$break_set_plot}.
 }
 \section{Super class}{
 \code{\link[quantigas:COGASData]{COGASData}} -> \code{SampData}
@@ -62,7 +37,7 @@ to select a specific one from the function call, i.e.
 \if{html}{\out{<a id="method-SampData-initialize"></a>}}
 \if{latex}{\out{\hypertarget{method-SampData-initialize}{}}}
 \subsection{\code{SampData$new()}}{
-  Create a New \code{SampData} Object
+  Create a new \code{SampData} object.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{SampData$new(params)}
@@ -87,7 +62,7 @@ to pull information from.}
 \if{html}{\out{<a id="method-SampData-print"></a>}}
 \if{latex}{\out{\hypertarget{method-SampData-print}{}}}
 \subsection{\code{SampData$print()}}{
-  Print Object
+  Print useful information about the state of the object.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{SampData$print()}
@@ -102,7 +77,11 @@ to pull information from.}
 \if{html}{\out{<a id="method-SampData-calc_amounts"></a>}}
 \if{latex}{\out{\hypertarget{method-SampData-calc_amounts}{}}}
 \subsection{\code{SampData$calc_amounts()}}{
-  Calculate Amount Fractions
+  Calculate amount fractions and uncertainties for unknown samples based
+on either a calibration model for multi-point calibration or through a
+one-to-one comparison with the control sample for single-point
+calibration. The final amount fractions are estimated from the ratio MC
+samples that were used in the ratio uncertainty calculation.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{SampData$calc_amounts(model_obj, summ_cols = defaults$SUMM_COLS)}
@@ -133,7 +112,7 @@ Variables to group by when performing calculation. Defaults to
 \if{html}{\out{<a id="method-SampData-plot_data"></a>}}
 \if{latex}{\out{\hypertarget{method-SampData-plot_data}{}}}
 \subsection{\code{SampData$plot_data()}}{
-  Plot Data
+  Generate useful diagnostic plots for the current analysis.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{SampData$plot_data(units = defaults$UNITS)}
@@ -156,7 +135,9 @@ Units to use for the y-axis label. Defaults to "mu*mol ~~ mol^-1".}
 \if{html}{\out{<a id="method-SampData-get_mc"></a>}}
 \if{latex}{\out{\hypertarget{method-SampData-get_mc}{}}}
 \subsection{\code{SampData$get_mc()}}{
-  Get MC Samples
+  Get all private attributes containing MC samples. If all attributes are
+not needed at the same time, it can be convenient to select a specific
+one from the function call, i.e. \code{get_mc()$response_mc}.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{SampData$get_mc()}
@@ -171,7 +152,9 @@ Units to use for the y-axis label. Defaults to "mu*mol ~~ mol^-1".}
 \if{html}{\out{<a id="method-SampData-get_data"></a>}}
 \if{latex}{\out{\hypertarget{method-SampData-get_data}{}}}
 \subsection{\code{SampData$get_data()}}{
-  Get Data Frames
+  Get all private attributes that are data frames. If all attributes are
+not needed at the same time, it can be convenient to select a specific
+one from the function call, i.e. \code{get_data()$cleaned_data}.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{SampData$get_data()}
@@ -186,7 +169,9 @@ Units to use for the y-axis label. Defaults to "mu*mol ~~ mol^-1".}
 \if{html}{\out{<a id="method-SampData-get_plots"></a>}}
 \if{latex}{\out{\hypertarget{method-SampData-get_plots}{}}}
 \subsection{\code{SampData$get_plots()}}{
-  Get Plots
+  Get all private attributes that are plot objects. If all attributes are
+not needed at the same time, it can be convenient to select a specific
+one from the function call, i.e. \code{get_plots()$break_set_plot}.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{SampData$get_plots()}

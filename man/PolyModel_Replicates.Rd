@@ -8,39 +8,6 @@ Derived class for modelling GSMG measurement data. Specifically deals with
 building an error-in-variables model with all replicates data. It inherits
 from the \link{PolyModel} class and thus has access to its public and private
 attributes and methods.
-
-This function builds the candidate polynomial models and runs the
-optimization algorithm for each to assess their fit of the data. It also
-generates residual plots for each candidate model. The best model has
-the smallest signed value of AIC, BIC, or both; however, the model
-selected for use is usually the one in which the values of AIC and BIC
-show their first substantial drop as model complexity increases. These
-statistical criteria should be taken into account in conjunction with the
-residual plots, which should show no discernable patterns.
-
-This function performs a simulation on the chosen candidate model to
-propagate measurement uncertainty through the analysis function using
-the replicate MC samples of the calibration object. Assumes the certified
-amount fractions are normally distributed.
-
-This function utilizes the results obtained from
-\code{\link[=simulate]{simulate()}}(#method-simulate to predict new data. MC samples are
-returned and must be summarized by the caller.
-
-This functions returns a list of all private attributes that contain
-information related to the analysis. If all attributes are not needed at
-the same time, it can be convenient to select a specific one from the
-function call, i.e. \code{get_info()$n_std}.
-
-This function returns a list of all private attributes containing MC
-samples. If all attributes are not needed at the same time, it can be
-convenient to select a specific one from the function call, i.e.
-\code{get_mc()$r_mc}.
-
-This function returns a list of all private attributes that are data
-frames. If all attributes are not needed at the same time, it can be
-convenient to select a specific one from the function call, i.e.
-\code{get_data()$cal_data}.
 }
 \section{Super classes}{
 \code{\link[quantigas:ModelBuilder]{ModelBuilder}} -> \code{\link[quantigas:PolyModel]{PolyModel}} -> \code{PolyModel_Replicates}
@@ -70,7 +37,7 @@ convenient to select a specific one from the function call, i.e.
 \if{html}{\out{<a id="method-PolyModel_Replicates-initialize"></a>}}
 \if{latex}{\out{\hypertarget{method-PolyModel_Replicates-initialize}{}}}
 \subsection{\code{PolyModel_Replicates$new()}}{
-  Create a New \code{PolyModel_Replicates} Object
+  Create a new \code{PolyModel_Replicates} object.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{PolyModel_Replicates$new(cal_obj, filt_samples = "")}
@@ -96,7 +63,7 @@ string.}
 \if{html}{\out{<a id="method-PolyModel_Replicates-print"></a>}}
 \if{latex}{\out{\hypertarget{method-PolyModel_Replicates-print}{}}}
 \subsection{\code{PolyModel_Replicates$print()}}{
-  Print Object
+  Print useful information about the state of the object.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{PolyModel_Replicates$print()}
@@ -111,7 +78,14 @@ string.}
 \if{html}{\out{<a id="method-PolyModel_Replicates-model_selection"></a>}}
 \if{latex}{\out{\hypertarget{method-PolyModel_Replicates-model_selection}{}}}
 \subsection{\code{PolyModel_Replicates$model_selection()}}{
-  Model Selection
+  Build candidate polynomial models and run the optimization algorithm for
+each to assess their fit of the data. It also generates residual plots
+for each candidate model. The best model has the smallest signed value
+of AIC, BIC, or both; however, the model selected for use is usually the
+one in which the values of AIC and BIC show their first substantial drop
+as model complexity increases. These statistical criteria should be
+taken into account in conjunction with the residual plots, which should
+show no discernable patterns.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{PolyModel_Replicates$model_selection()}
@@ -126,7 +100,10 @@ string.}
 \if{html}{\out{<a id="method-PolyModel_Replicates-simulate"></a>}}
 \if{latex}{\out{\hypertarget{method-PolyModel_Replicates-simulate}{}}}
 \subsection{\code{PolyModel_Replicates$simulate()}}{
-  Monte Carlo Uncertainty Simulation
+  Perform a Monte Carlo simulation on the selected candidate model to
+propagate measurement uncertainty through the analysis function using
+the replicate MC samples of the calibration object. Assumes the certified
+amount fractions are normally distributed.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{PolyModel_Replicates$simulate(model_num = defaults$MODEL_NUM, ...)}
@@ -151,7 +128,9 @@ simulation. Defaults to 1.}
 \if{html}{\out{<a id="method-PolyModel_Replicates-predict"></a>}}
 \if{latex}{\out{\hypertarget{method-PolyModel_Replicates-predict}{}}}
 \subsection{\code{PolyModel_Replicates$predict()}}{
-  Predict Unknowns
+  Predict unknowns utilizing the results obtained from
+\href{#method-simulate}{\code{simulate()}}. MC samples are returned and must be
+summarized by the caller.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{PolyModel_Replicates$predict(data = NULL)}
@@ -175,7 +154,7 @@ matrix.
     \if{html}{\out{</div>}}
   }
   \subsection{Returns}{
-    A \code{numeric} or \code{matrix} with the calculated MC samples.
+    A \code{vector} or \code{matrix} with the calculated MC samples.
   }
 }
 
@@ -183,7 +162,10 @@ matrix.
 \if{html}{\out{<a id="method-PolyModel_Replicates-get_info"></a>}}
 \if{latex}{\out{\hypertarget{method-PolyModel_Replicates-get_info}{}}}
 \subsection{\code{PolyModel_Replicates$get_info()}}{
-  Get Analysis Info
+  Get all private attributes that contain general information on the
+analysis. If all attributes are not needed at the same time, it can be
+convenient to select a specific one from the function call, i.e.
+\code{get_info()$n_std}.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{PolyModel_Replicates$get_info()}
@@ -198,7 +180,9 @@ matrix.
 \if{html}{\out{<a id="method-PolyModel_Replicates-get_mc"></a>}}
 \if{latex}{\out{\hypertarget{method-PolyModel_Replicates-get_mc}{}}}
 \subsection{\code{PolyModel_Replicates$get_mc()}}{
-  Get MC Samples
+  Get all private attributes containing MC samples. If all attributes are
+not needed at the same time, it can be convenient to select a specific
+one from the function call, i.e. \code{get_mc()$r_mc}.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{PolyModel_Replicates$get_mc()}
@@ -213,7 +197,9 @@ matrix.
 \if{html}{\out{<a id="method-PolyModel_Replicates-get_data"></a>}}
 \if{latex}{\out{\hypertarget{method-PolyModel_Replicates-get_data}{}}}
 \subsection{\code{PolyModel_Replicates$get_data()}}{
-  Get Data Frames
+  Get all private attributes that are data frames. If all attributes are
+not needed at the same time, it can be convenient to select a specific
+one from the function call, i.e. \code{get_data()$cal_data}.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{PolyModel_Replicates$get_data()}

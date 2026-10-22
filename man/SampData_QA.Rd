@@ -8,24 +8,6 @@ Derived class for processing data from COGAS. Specifically deals with QA
 data for unknown samples and comparing a sample's certified value to the
 current calculation. It inherits from the \link{SampData} class and thus has
 access to its public and private attributes and methods.
-
-The parameters needed in the call to
-\code{\link[=SampData#method-calc_amounts]{SampData$calc_amounts()}} must be
-passed through \code{...}. The function additionally calculates differences
-between the certified amount fractions and the current calculations.
-
-This function generates useful diagnostic plots for the data from the
-current analysis.
-
-This function returns a list of all private attributes that are data
-frames. If all attributes are not needed at the same time, it can be
-convenient to select a specific one from the function call, i.e.
-\code{get_data()$cleaned_data}.
-
-This function returns a list of all private attributes that are plots.
-If all attributes are not needed at the same time, it can be convenient
-to select a specific one from the function call, i.e.
-\code{get_plots()$break_set_plot}.
 }
 \section{Super classes}{
 \code{\link[quantigas:COGASData]{COGASData}} -> \code{\link[quantigas:SampData]{SampData}} -> \code{SampData_QA}
@@ -55,7 +37,7 @@ to select a specific one from the function call, i.e.
 \if{html}{\out{<a id="method-SampData_QA-initialize"></a>}}
 \if{latex}{\out{\hypertarget{method-SampData_QA-initialize}{}}}
 \subsection{\code{SampData_QA$new()}}{
-  Create a New \code{SampData_QA} Object
+  Create a new \code{SampData_QA} object.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{SampData_QA$new(params)}
@@ -86,7 +68,7 @@ fractions
 \if{html}{\out{<a id="method-SampData_QA-print"></a>}}
 \if{latex}{\out{\hypertarget{method-SampData_QA-print}{}}}
 \subsection{\code{SampData_QA$print()}}{
-  Print Object
+  Print useful information about the state of the object.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{SampData_QA$print()}
@@ -101,7 +83,11 @@ fractions
 \if{html}{\out{<a id="method-SampData_QA-calc_amounts"></a>}}
 \if{latex}{\out{\hypertarget{method-SampData_QA-calc_amounts}{}}}
 \subsection{\code{SampData_QA$calc_amounts()}}{
-  Calculate Amount Fractions
+  Calculate amount fractions and uncertainties for unknown samples, and
+additionally calculate differences between the certified amount
+fractions and the current calculations. The parameters needed in the
+call to \href{#method-SampData-calc_amounts}{\code{SampData$calc_amounts()}} must
+be passed through \code{...}.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{SampData_QA$calc_amounts(...)}
@@ -123,7 +109,7 @@ fractions
 \if{html}{\out{<a id="method-SampData_QA-plot_data"></a>}}
 \if{latex}{\out{\hypertarget{method-SampData_QA-plot_data}{}}}
 \subsection{\code{SampData_QA$plot_data()}}{
-  Plot Data
+  Generate useful diagnostic plots for the current analysis.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{SampData_QA$plot_data(units = defaults$UNITS)}
@@ -146,7 +132,9 @@ Units to use for the y-axis label. Defaults to "mu*mol ~~ mol^-1".}
 \if{html}{\out{<a id="method-SampData_QA-get_data"></a>}}
 \if{latex}{\out{\hypertarget{method-SampData_QA-get_data}{}}}
 \subsection{\code{SampData_QA$get_data()}}{
-  Get Data Frames
+  Get all private attributes that are data frames. If all attributes are
+not needed at the same time, it can be convenient to select a specific
+one from the function call, i.e. \code{get_data()$cleaned_data}.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{SampData_QA$get_data()}
@@ -161,7 +149,9 @@ Units to use for the y-axis label. Defaults to "mu*mol ~~ mol^-1".}
 \if{html}{\out{<a id="method-SampData_QA-get_plots"></a>}}
 \if{latex}{\out{\hypertarget{method-SampData_QA-get_plots}{}}}
 \subsection{\code{SampData_QA$get_plots()}}{
-  Get Plots
+  Get all private attributes that are plot objects. If all attributes are
+not needed at the same time, it can be convenient to select a specific
+one from the function call, i.e. \code{get_plots()$break_set_plot}.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{SampData_QA$get_plots()}

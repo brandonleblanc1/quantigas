@@ -8,11 +8,6 @@ Derived class for processing data from COGAS. Specifically deals with data
 for unknowns when the sample(s) of interest is(are) analyzed concurrently
 with the calibration data. It inherits from the \link{SampData} class and thus
 has access to its public and private attributes and methods.
-
-This function reads in and cleans the data from the current analysis. It
-is explicitly reimplemented in this class to override the default
-\link{COGASData} method and specifically pull the data for \code{filt_samples} out
-of the calibration data.
 }
 \section{Super classes}{
 \code{\link[quantigas:COGASData]{COGASData}} -> \code{\link[quantigas:SampData]{SampData}} -> \code{SampData_Embedded}
@@ -42,7 +37,9 @@ of the calibration data.
 \if{html}{\out{<a id="method-SampData_Embedded-clean_data"></a>}}
 \if{latex}{\out{\hypertarget{method-SampData_Embedded-clean_data}{}}}
 \subsection{\code{SampData_Embedded$clean_data()}}{
-  Clean Data
+  Read in and clean the data from the current analysis. Explicitly
+reimplemented here to override the default \link{COGASData} method and
+pull the data for \code{filt_samples} out of the calibration data.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{SampData_Embedded$clean_data(cal_obj, filt_samples, ...)}

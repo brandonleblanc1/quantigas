@@ -8,50 +8,6 @@ Base class for processing data from COGAS. Essentially just a container for
 the process of reading, cleaning, and analyzing raw data from GSMG
 measurements. This object is typically constructed via its derived classes,
 \link{CalData} and \link{SampData} (and variants).
-
-Automatically calls \href{#method-clean_data}{\code{clean_data()}}.
-
-This function reads in and cleans the data from the current analysis.
-Currently only has support for reading data from a CSV file containing
-all of the raw data scraped from a COGAS Excel workbook. Based on the
-instrument used, compound of interest, and data collection method,
-different data operations may be performed.
-
-One thing to note is that unless an entire break set went awry, any data
-being discarded from the analysis should be left intact with the rest of
-the data. This "bad" data should be discriminated against by renaming the
-samples to "DNI" (Do Not Include). This ensures that any metadata
-associated with the "bad" data is still accurately reflected in the
-"good" data, and these data points can be easily filtered out.
-
-This function takes the cleaned data from the current analysis and
-computes summary statistics according to the supplied grouping
-variables.
-
-This function generates useful diagnostic plots for the data from the
-current analysis.
-
-This functions returns a list of all private attributes that contain
-information related to the analysis. If all attributes are not needed at
-the same time, it can be convenient to select a specific one from the
-function call, i.e. \code{get_info()$instrument}.
-
-This function returns a list of all private attributes containing MC
-samples. If all attributes are not needed at the same time, it can be
-convenient to select a specific one from the function call, i.e.
-\code{get_mc()$response_mc}.
-
-This function returns a list of all private attributes that are data
-frames. If all attributes are not needed at the same time, it can be
-convenient to select a specific one from the function call, i.e.
-\code{get_data()$cleaned_data}.
-
-This function returns a list of all private attributes that are plots.
-If all attributes are not needed at the same time, it can be convenient
-to select a specific one from the function call, i.e.
-\code{get_plots()$break_set_plot}.
-
-This function saves the object as an RDS file.
 }
 \section{Methods}{
 \subsection{Public methods}{
@@ -73,7 +29,8 @@ This function saves the object as an RDS file.
 \if{html}{\out{<a id="method-COGASData-initialize"></a>}}
 \if{latex}{\out{\hypertarget{method-COGASData-initialize}{}}}
 \subsection{\code{COGASData$new()}}{
-  Create a New \code{COGASData} Object
+  Create a new \code{COGASData} object. Automatically calls
+\href{#method-clean_data}{\code{clean_data()}}.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{COGASData$new(params)}
@@ -108,7 +65,7 @@ default values.}
 \if{html}{\out{<a id="method-COGASData-print"></a>}}
 \if{latex}{\out{\hypertarget{method-COGASData-print}{}}}
 \subsection{\code{COGASData$print()}}{
-  Print Object
+  Print useful information about the state of the object.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{COGASData$print()}
@@ -123,7 +80,18 @@ default values.}
 \if{html}{\out{<a id="method-COGASData-clean_data"></a>}}
 \if{latex}{\out{\hypertarget{method-COGASData-clean_data}{}}}
 \subsection{\code{COGASData$clean_data()}}{
-  Clean Data
+  Read in and clean the data from the current analysis. Currently only has
+support for reading data from a CSV file containing all of the raw data
+scraped from a COGAS Excel workbook. Based on the instrument used,
+compound of interest, and data collection method, different data
+operations may be performed.
+
+One thing to note is that unless an entire break set went awry, any data
+being discarded from the analysis should be left intact with the rest of
+the data. This "bad" data should be discriminated against by renaming the
+samples to "DNI" (Do Not Include). This ensures that any metadata
+associated with the "bad" data is still accurately reflected in the
+"good" data, and these data points can be easily filtered out.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{COGASData$clean_data(...)}
@@ -145,7 +113,8 @@ default values.}
 \if{html}{\out{<a id="method-COGASData-summarize_data"></a>}}
 \if{latex}{\out{\hypertarget{method-COGASData-summarize_data}{}}}
 \subsection{\code{COGASData$summarize_data()}}{
-  Summarize Data
+  Compute summary statistics on the cleaned data according to the supplied
+grouping variables.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{COGASData$summarize_data(summ_cols = defaults$SUMM_COLS)}
@@ -169,7 +138,7 @@ Variables to group by when performing calculation. Defaults to
 \if{html}{\out{<a id="method-COGASData-plot_data"></a>}}
 \if{latex}{\out{\hypertarget{method-COGASData-plot_data}{}}}
 \subsection{\code{COGASData$plot_data()}}{
-  Plot Data
+  Generate useful diagnostic plots for the current analysis.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{COGASData$plot_data()}
@@ -184,7 +153,10 @@ Variables to group by when performing calculation. Defaults to
 \if{html}{\out{<a id="method-COGASData-get_info"></a>}}
 \if{latex}{\out{\hypertarget{method-COGASData-get_info}{}}}
 \subsection{\code{COGASData$get_info()}}{
-  Get Analysis Info
+  Get all private attributes that contain general information on the
+analysis. If all attributes are not needed at the same time, it can be
+convenient to select a specific one from the function call, i.e.
+\code{get_info()$instrument}.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{COGASData$get_info()}
@@ -199,7 +171,9 @@ Variables to group by when performing calculation. Defaults to
 \if{html}{\out{<a id="method-COGASData-get_mc"></a>}}
 \if{latex}{\out{\hypertarget{method-COGASData-get_mc}{}}}
 \subsection{\code{COGASData$get_mc()}}{
-  Get MC Samples
+  Get all private attributes containing MC samples. If all attributes are
+not needed at the same time, it can be convenient to select a specific
+one from the function call, i.e. \code{get_mc()$response_mc}.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{COGASData$get_mc()}
@@ -214,7 +188,9 @@ Variables to group by when performing calculation. Defaults to
 \if{html}{\out{<a id="method-COGASData-get_data"></a>}}
 \if{latex}{\out{\hypertarget{method-COGASData-get_data}{}}}
 \subsection{\code{COGASData$get_data()}}{
-  Get Data Frames
+  Get all private attributes that are data frames. If all attributes are
+not needed at the same time, it can be convenient to select a specific
+one from the function call, i.e. \code{get_data()$cleaned_data}.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{COGASData$get_data()}
@@ -229,7 +205,9 @@ Variables to group by when performing calculation. Defaults to
 \if{html}{\out{<a id="method-COGASData-get_plots"></a>}}
 \if{latex}{\out{\hypertarget{method-COGASData-get_plots}{}}}
 \subsection{\code{COGASData$get_plots()}}{
-  Get Plots
+  Get all private attributes that are plot objects. If all attributes are
+not needed at the same time, it can be convenient to select a specific
+one from the function call, i.e. \code{get_plots()$break_set_plot}.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{COGASData$get_plots()}
@@ -244,7 +222,7 @@ Variables to group by when performing calculation. Defaults to
 \if{html}{\out{<a id="method-COGASData-save_object"></a>}}
 \if{latex}{\out{\hypertarget{method-COGASData-save_object}{}}}
 \subsection{\code{COGASData$save_object()}}{
-  Save Object
+  Save the object to an RDS file.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{COGASData$save_object(filepath)}

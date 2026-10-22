@@ -9,11 +9,6 @@ for instrument calibration and includes an attribute to store the
 certification data associated with the calibration standards. Inherits from
 the \link{COGASData} class and thus has access to its public and private
 attributes and methods.
-
-This function returns a list of all private attributes that are data
-frames. If all attributes are not needed at the same time, it can be
-convenient to select a specific one from the function call, i.e.
-\code{get_data()$cleaned_data}.
 }
 \section{Super class}{
 \code{\link[quantigas:COGASData]{COGASData}} -> \code{CalData}
@@ -42,7 +37,7 @@ convenient to select a specific one from the function call, i.e.
 \if{html}{\out{<a id="method-CalData-initialize"></a>}}
 \if{latex}{\out{\hypertarget{method-CalData-initialize}{}}}
 \subsection{\code{CalData$new()}}{
-  Create a New \code{CalData} Object
+  Create a new \code{CalData} object.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CalData$new(params)}
@@ -73,7 +68,7 @@ fractions
 \if{html}{\out{<a id="method-CalData-print"></a>}}
 \if{latex}{\out{\hypertarget{method-CalData-print}{}}}
 \subsection{\code{CalData$print()}}{
-  Print Object
+  Print useful information about the state of the object.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CalData$print()}
@@ -88,7 +83,9 @@ fractions
 \if{html}{\out{<a id="method-CalData-get_data"></a>}}
 \if{latex}{\out{\hypertarget{method-CalData-get_data}{}}}
 \subsection{\code{CalData$get_data()}}{
-  Get Data Frames
+  Get all private attributes that are data frames. If all attributes are
+not needed at the same time, it can be convenient to select a specific
+one from the function call, i.e. \code{get_data()$cleaned_data}.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CalData$get_data()}
