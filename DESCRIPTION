@@ -24,5 +24,8 @@ Imports:
     future,
     robustbase,
     nloptr,
+    mvtnorm,
+    numDeriv,
+    MASS,
     ggplot2,
     ggthemes

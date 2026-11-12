@@ -65,8 +65,7 @@ PolyModel_Replicates <- R6::R6Class(
       # Subsetting ratio MC samples for relevant data.
       private$r_mc <- cal_mc$ratio_mc[
         as.numeric(levels(private$cal_data$sample_set)),
-      ] %>%
-        `rownames<-`(private$cal_data$sample_id)
+      ]
     },
 
     #' @description
@@ -219,7 +218,7 @@ PolyModel_Replicates <- R6::R6Class(
       # Running the optimization algorithm for each set of ratio and amount
       # fraction random samples. Each worker will get a certain chunk of columns
       # to optimize in serial.
-      private$solution_mc <- furrr::future_map2(
+      private$beta_mc <- furrr::future_map2(
         lapply(col_chunks, \(cols) private$r_mc[, cols]),
         lapply(col_chunks, \(cols) private$c_mc[, cols]),
         \(r_mc, c_mc) {
@@ -251,7 +250,7 @@ PolyModel_Replicates <- R6::R6Class(
       c_resid <- private$c_mc - self$predict(model_info$rho[[1]])
 
       # Summarizing residuals for both ratios and amounts fractions.
-      private$mc_summ <- list(r = r_resid, c = c_resid) %>%
+      private$sim_summ <- list(r = r_resid, c = c_resid) %>%
         purrr::map(\(mat) {
           mat %>%
             tibble::as_tibble(
@@ -287,7 +286,7 @@ PolyModel_Replicates <- R6::R6Class(
       # Getting covariance of coefficients.
       private$beta_cov <- private$calc_beta_cov(
         model_info$beta[[1]],
-        private$solution_mc
+        private$beta_mc
       )
 
       invisible(self)
@@ -311,14 +310,14 @@ PolyModel_Replicates <- R6::R6Class(
     #'
     #' @return A `vector` or `matrix` with the calculated MC samples.
     predict = function(data = NULL) {
-      if (is.null(private$solution_mc)) {
+      if (is.null(private$beta_mc)) {
         self$simulate()
       }
 
       if (is.null(data)) {
         # Control sample is a ratio of 1, so just taking the sums of each pair
         # of coefficients.
-        colSums(private$solution_mc) + private$lambda_mc
+        colSums(private$beta_mc) + private$lambda_mc
       } else {
         # Extracting the powers of r from the analysis function.
         powers <- eval(str2expression(stringr::str_extract(
@@ -331,9 +330,9 @@ PolyModel_Replicates <- R6::R6Class(
         seq_along(powers) %>%
           purrr::map(\(i) {
             if (is.matrix(data)) {
-              sweep(data^powers[i], 2, private$solution_mc[i, ], FUN = "*")
+              sweep(data^powers[i], 2, private$beta_mc[i, ], FUN = "*")
             } else {
-              outer(data^powers[i], private$solution_mc[i, ])
+              outer(data^powers[i], private$beta_mc[i, ])
             }
           }) %>%
           purrr::reduce(`+`) %>%

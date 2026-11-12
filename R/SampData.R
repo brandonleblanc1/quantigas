@@ -93,9 +93,20 @@ SampData <- R6::R6Class(
     #'
     #' @return The calling object invisibly.
     calc_amounts = function(model_obj, summ_cols = defaults$SUMM_COLS) {
+      # Finding subset of raw data that corresponds to samples kept in the
+      # cleaned dataset.
+      cleaned_subset <- split(
+        seq_len(nrow(private$raw_data)),
+        private$raw_data$sample_id
+      ) %>%
+        magrittr::extract(levels(private$cleaned_data$sample_id)) %>%
+        unlist()
+
       if (inherits(model_obj, "ModelBuilder")) {
         control_mc <- model_obj$predict()
-        private$amount_mc <- model_obj$predict(private$ratio_mc)
+        private$amount_mc <- model_obj$predict(private$ratio_mc)[
+          cleaned_subset,
+        ]
       } else {
         stopifnot(c("amount", "uamount") %in% names(model_obj))
 
@@ -105,25 +116,41 @@ SampData <- R6::R6Class(
           mean = model_obj[["amount"]],
           sd = model_obj[["uamount"]]
         )
-        private$amount_mc <- sweep(private$ratio_mc, 2, control_mc, FUN = "*")
+        private$amount_mc <- sweep(private$ratio_mc, 2, control_mc, FUN = "*")[
+          cleaned_subset,
+        ]
       }
 
+      # Calculating covariance matrix.
+      sigma <- robustbase::covMcd(t(private$amount_mc))$cov
+
+      # Finding subsets of cleaned data dictated by the summary columns.
+      var_subsets <- split(
+        seq_len(nrow(private$cleaned_data)),
+        purrr::map(summ_cols, \(var) private$cleaned_data[[var]]),
+        drop = TRUE,
+        lex.order = TRUE
+      )
+
       # Summarizing results.
-      private$amounts <- private$amount_mc %>%
-        tibble::as_tibble(
-          .name_repair = "unique_quiet",
-          rownames = "sample_set"
-        ) %>%
-        dplyr::left_join(private$cleaned_data, ., by = "sample_set") %>%
-        tidyr::pivot_longer(tidyselect::starts_with("...")) %>%
-        dplyr::summarise(
-          amount = robustbase::huberM(value)$mu,
-          uamount = robustbase::Qn(value),
-          .by = tidyselect::all_of(summ_cols)
-        ) %>%
+      private$amounts <- purrr::map(var_subsets, \(sub) {
+        # Calculating weighted average and the corresponding variance for each
+        # subset.
+        ones <- rep(1, length(sub))
+        sigma_inv <- MASS::ginv(sigma[sub, sub])
+        denom <- as.numeric(t(ones) %*% sigma_inv %*% ones)
+        w <- sigma_inv %*% ones / denom
+
+        tibble::tibble(
+          amount = as.numeric(t(w) %*% rowMeans(private$amount_mc[sub, ])),
+          uamount = sqrt(1 / denom)
+        )
+      }) %>%
+        dplyr::bind_rows(.id = "subset") %>%
+        tidyr::separate_wider_delim(subset, ".", names = summ_cols) %>%
         tibble::add_row(
           sample_id = as.factor(private$control),
-          amount = robustbase::huberM(control_mc)$mu,
+          amount = mean(control_mc),
           uamount = robustbase::Qn(control_mc),
           .before = 1
         ) %>%
@@ -147,11 +174,11 @@ SampData <- R6::R6Class(
       if (!is.null(private$amounts)) {
         # Getting unnested amounts for violin plots.
         unnested <- private$amount_mc %>%
-          tibble::as_tibble(
-            .name_repair = "unique_quiet",
-            rownames = "sample_set"
+          tibble::as_tibble(.name_repair = "unique_quiet") %>%
+          dplyr::bind_cols(
+            private$cleaned_data,
+            .name_repair = "unique_quiet"
           ) %>%
-          dplyr::left_join(private$cleaned_data, ., by = "sample_set") %>%
           tidyr::pivot_longer(tidyselect::starts_with("..."))
 
         # If an additional column was used to nest data during the calculation,

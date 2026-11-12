@@ -141,7 +141,7 @@ COGASData <- R6::R6Class(
     #' @return The calling object invisibly.
     clean_data = function(...) {
       private$raw_data <- private$read_data(...) %>%
-        private$summarize_if_ts(...) %>%
+        private$method_summ(...) %>%
         private$instrument_calc() %>%
         private$calc_ratios(...) %>%
         dplyr::mutate(dplyr::across(port:day_set, forcats::as_factor))
@@ -181,23 +181,65 @@ COGASData <- R6::R6Class(
     #'
     #' @return The calling object invisibly.
     summarize_data = function(summ_cols = defaults$SUMM_COLS) {
-      private$summ_stats <- private$cleaned_data %>%
-        dplyr::summarise(
-          avg_response = mean(response),
-          sd_w = sqrt(mean(uresponse^2)),
-          sd_b = stats::sd(response),
-          sd_total = sqrt(sd_w^2 + sd_b^2),
+      # Finding subset of raw data that corresponds to samples kept in the
+      # cleaned dataset.
+      cleaned_subset <- split(
+        seq_len(nrow(private$raw_data)),
+        private$raw_data$sample_id
+      ) %>%
+        magrittr::extract(levels(private$cleaned_data$sample_id)) %>%
+        unlist()
+
+      # Subsetting MC samples, calculating covariance matrices, and centering.
+      mats <- purrr::map(
+        list(response = private$response_mc, ratio = private$ratio_mc),
+        \(mat) mat[cleaned_subset, ]
+      )
+      sigma <- purrr::map(mats, \(mat) robustbase::covMcd(t(mat))$cov)
+      centered <- purrr::imap(mats, \(mat, name) {
+        sweep(mat, 1, private$cleaned_data[[name]])
+      })
+
+      # Finding subsets of cleaned data dictated by the summary columns.
+      var_subsets <- split(
+        seq_len(nrow(private$cleaned_data)),
+        purrr::map(summ_cols, \(var) private$cleaned_data[[var]]),
+        drop = TRUE,
+        lex.order = TRUE
+      )
+
+      private$summ_stats <- purrr::map(var_subsets, \(sub) {
+        # Calculating weighted average and the corresponding variance for each
+        # subset.
+        n <- length(sub)
+        ones <- rep(1, n)
+        summary <- purrr::imap(sigma, \(mat, name) {
+          sigma_inv <- MASS::ginv(mat[sub, sub])
+          denom <- as.numeric(t(ones) %*% sigma_inv %*% ones)
+          w <- sigma_inv %*% ones / denom
+
+          list(
+            mu = as.numeric(t(w) %*% private$cleaned_data[[name]][sub]),
+            var = 1 / denom
+          )
+        })
+
+        tibble::tibble(
+          avg_response = summary$response$mu,
+          sd_w = robustbase::Qn(centered$response[sub, ]),
+          sd_b = sqrt(sum(sigma$response[sub, sub])),
+          sd_total = sqrt(summary$response$var),
           rsd_total = 100 * sd_total / avg_response,
-          avg_ratio = mean(ratio),
-          u_w = sqrt(mean(uratio^2)),
-          u_b = stats::sd(ratio),
-          u_total = sqrt(u_w^2 + u_b^2),
+          avg_ratio = summary$ratio$mu,
+          u_w = robustbase::Qn(centered$ratio[sub, ]),
+          u_b = sqrt(sum(sigma$ratio[sub, sub])),
+          u_total = sqrt(summary$ratio$var),
           ru_total = 100 * u_total / avg_ratio,
-          n_repl = dplyr::n(),
-          .by = tidyselect::all_of(summ_cols)
-        ) %>%
-        dplyr::relocate(tidyselect::all_of(summ_cols)) %>%
-        dplyr::arrange(dplyr::pick(tidyselect::all_of(summ_cols)))
+          n_repl = n
+        )
+      }) %>%
+        dplyr::bind_rows(.id = "subset") %>%
+        tidyr::separate_wider_delim(subset, ".", names = summ_cols)
 
       invisible(self)
     },
@@ -232,7 +274,8 @@ COGASData <- R6::R6Class(
         ) %>%
         ggplot2::ggplot(ggplot2::aes(
           x = as.numeric(sample_set),
-          color = sample_id
+          color = sample_id,
+          group = break_set
         )) +
         ggplot2::geom_line(ggplot2::aes(
           y = norm_response,
@@ -263,18 +306,12 @@ COGASData <- R6::R6Class(
           linetype = ggplot2::guide_legend(order = 1),
           color = ggplot2::guide_legend(override.aes = list(linetype = 0))
         ) +
-        ggplot2::facet_wrap(
-          ggplot2::vars(break_set),
-          ncol = 2,
-          scales = "free",
-          dir = "v",
-          labeller = "label_both"
-        ) +
         ggplot2::labs(x = NULL, y = "Normalized Value") +
         ggplot2::theme_bw()
 
       # Getting unnested ratios for violin plots.
       unnested <- private$ratio_mc %>%
+        `rownames<-`(seq_len(nrow(.))) %>%
         tibble::as_tibble(
           .name_repair = "unique_quiet",
           rownames = "sample_set"
@@ -290,14 +327,14 @@ COGASData <- R6::R6Class(
       # Plotting distribution of each replicate ratio by sample id, overlaid
       # with their location and uncertainty estimates.
       private$replicate_plot <- ggplot2::ggplot(
-        mapping = ggplot2::aes(x = sample_set)
+        mapping = ggplot2::aes(x = sample_id)
       ) +
         ggplot2::geom_violin(
-          ggplot2::aes(y = ratio_mc, fill = break_set),
+          ggplot2::aes(y = ratio_mc, fill = break_set, group = sample_set),
           data = unnested,
+          position = "identity",
           quantile.linetype = 3,
           quantile.color = "black",
-          scale = "width",
           alpha = 0.6
         ) +
         ggplot2::geom_pointrange(
@@ -306,12 +343,7 @@ COGASData <- R6::R6Class(
           size = 0.25
         ) +
         ggplot2::scale_fill_viridis_d(name = "Break Set") +
-        ggplot2::facet_wrap(
-          ggplot2::vars(sample_id),
-          ncol = 2,
-          scales = "free"
-        ) +
-        ggplot2::labs(x = "Sample Set", y = "Ratio") +
+        ggplot2::labs(x = NULL, y = "Ratio") +
         ggplot2::theme_bw()
 
       invisible(self)
@@ -514,19 +546,19 @@ COGASData <- R6::R6Class(
     # summary statistics for the associated time series data. Implementation of
     # a robust time series framework will be provided in the future for
     # modelling instrument response dynamics.
-    summarize_if_ts = function(raw, n = defaults$N, ...) {
+    method_summ = function(raw, n = defaults$N, ...) {
       if (private$method == misc$TIME_SERIES) {
         raw %>%
           dplyr::slice_tail(n = n, by = sample_set) %>%
           dplyr::summarise(
             dplyr::across(date_time:day_set, dplyr::last),
             response = mean(response_ts),
-            uresponse = sd(response_ts),
+            uresponse = sd(response_ts) / sqrt(n),
             .by = sample_set
           ) %>%
           dplyr::relocate(sample_set, .after = sample_id)
       } else {
-        raw
+        raw %>% mutate(uresponse = uresponse / sqrt(n))
       }
     },
 
@@ -544,6 +576,10 @@ COGASData <- R6::R6Class(
           0.1
         }
         raw %>% dplyr::mutate(uresponse = sqrt(uresponse^2 + resolution^2 / 12))
+      } else if (
+        private$instrument %in% c(instruments$LOW_CHEMI, instruments$HIGH_CHEMI)
+      ) {
+        raw %>% dplyr::mutate(uresponse = sqrt(uresponse^2 + (1e-5)^2 / 12))
       } else {
         raw
       }
@@ -586,7 +622,7 @@ COGASData <- R6::R6Class(
         mean = raw$response,
         sd = raw$uresponse
       ) %>%
-        matrix(ncol = K)
+        matrix(ncol = K, dimnames = list(raw$sample_id))
 
       if (!is.null(x_cf)) {
         cf_mc <- stats::rnorm(K, mean = private$cf, sd = private$ucf)

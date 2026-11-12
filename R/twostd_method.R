@@ -56,13 +56,20 @@ twostd_method <- function(cal_obj) {
   # performs vector operations on matrices in column-major order, which is why
   # the transpose of ratios is taken above. The vector then gets recycled across
   # the columns of the matrix.
-  predicted_mc <- c1 + (1 - r1) * (c2 - c1) / (r2 - r1)
+  pred_mc <- c1 + (1 - r1) * (c2 - c1) / (r2 - r1)
+  pred_sigma <- robustbase::covMcd(predicted_mc)$cov
+
+  # Calculating weighted average and corresponding variance.
+  ones <- rep(1, nrow(pred_sigma))
+  sigma_inv <- MASS::ginv(pred_sigma)
+  denom <- as.numeric(t(ones) %*% sigma_inv %*% ones)
+  w <- sigma_inv %*% ones / denom
 
   # Summarizing results.
   tibble::tibble_row(
     sample_id = cal_obj$get_info()$control,
-    amount = robustbase::huberM(predicted_mc)$mu,
-    uamount = robustbase::Qn(predicted_mc),
+    amount = as.numeric(t(w) %*% colMeans(pred_mc)),
+    uamount = sqrt(1 / denom),
     uamount_rel = 100 * uamount / amount
   )
 }

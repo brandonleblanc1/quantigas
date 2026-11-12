@@ -27,11 +27,11 @@ PolyModel <- R6::R6Class(
         "    amount mc samples: matrix [",
         paste0(dim(private$c_mc), collapse = " x "),
         "]\n",
-        "    solution mc samples: matrix [",
-        paste0(dim(private$solution_mc), collapse = " x "),
+        "    coefficient mc samples: matrix [",
+        paste0(dim(private$beta_mc), collapse = " x "),
         "]\n",
-        "    mc residuals summary: tbl_df [",
-        paste0(dim(private$mc_summ), collapse = " x "),
+        "    simulation summary: tbl_df [",
+        paste0(dim(private$sim_summ), collapse = " x "),
         "]\n",
         "    coefficients data: tbl_df [",
         paste0(dim(private$beta_cov), collapse = " x "),
@@ -110,6 +110,21 @@ PolyModel <- R6::R6Class(
             just = "left"
           )
         )
+      } else if (inherits(self, "PolyModel_Correlated")) {
+        list(
+          grid::textGrob(
+            str2expression(paste("R^2 ==", signif(model_info$adj_r_sq))),
+            x = 0.15,
+            y = 0.9,
+            just = "left"
+          ),
+          grid::textGrob(
+            str2expression(paste("tau ==", signif(model_info$tau))),
+            x = 0.15,
+            y = 0.85,
+            just = "left"
+          )
+        )
       }
 
       # Generating points defined by the analysis function.
@@ -171,11 +186,7 @@ PolyModel <- R6::R6Class(
     #'
     #' @return A `list` of attributes.
     get_mc = function() {
-      list(
-        r_mc = private$r_mc,
-        c_mc = private$c_mc,
-        solution_mc = private$solution_mc
-      )
+      list(r_mc = private$r_mc, c_mc = private$c_mc, beta_mc = private$beta_mc)
     },
 
     #' @description
@@ -187,7 +198,7 @@ PolyModel <- R6::R6Class(
     get_data = function() {
       rlang::list2(
         !!!super$get_data(),
-        mc_summ = private$mc_summ,
+        sim_summ = private$sim_summ,
         beta_cov = private$beta_cov
       )
     },
@@ -215,12 +226,12 @@ PolyModel <- R6::R6Class(
     # `matrix`: Monte Carlo samples for the amount fractions.
     c_mc = NULL,
 
-    # `matrix`: Monte Carlo samples for the optimized model parameters.
-    solution_mc = NULL,
+    # `matrix`: Monte Carlo samples for the optimized model coefficients.
+    beta_mc = NULL,
 
     # [tibble::tibble]: Summary of residuals from the Monte Carlo simulation
     # for both ratios and amount fractions.
-    mc_summ = NULL,
+    sim_summ = NULL,
 
     # [tibble::tibble]: Covariance of coefficients for chosen model.
     beta_cov = NULL,
@@ -287,10 +298,14 @@ PolyModel <- R6::R6Class(
       private$models %>%
         dplyr::select(model_num, tidyselect::all_of(c(fitted_var, zscore))) %>%
         {
-          if (inherits(self, "PolyModel_Replicates") && (plot_var == "r")) {
+          if (
+            (inherits(self, "PolyModel_Replicates") ||
+              inherits(self, "PolyModel_Correlated")) &&
+              (plot_var == "r")
+          ) {
             dplyr::mutate(
               .,
-              rho = purrr::map(rho, \(ratios) rep(ratios, private$counts$n))
+              rho = purrr::map(rho, \(ratios) rep(ratios, private$init_vals$n))
             )
           } else {
             .
@@ -377,7 +392,7 @@ PolyModel <- R6::R6Class(
             ymin = .data[[resid]] - .data[[uresid]],
             ymax = .data[[resid]] + .data[[uresid]]
           ),
-          data = private$mc_summ
+          data = private$sim_summ
         ) +
         ggplot2::labs(title = tlabel, x = NULL, y = "Residual") +
         ggplot2::theme_bw()
