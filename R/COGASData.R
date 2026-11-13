@@ -112,8 +112,8 @@ COGASData <- R6::R6Class(
         "    summary stats: tbl_df [",
         paste0(dim(private$summ_stats), collapse = " x "),
         "]\n",
-        "    break set plot: ",
-        ifelse(is.null(private$break_set_plot), "NULL\n", "ggplot\n"),
+        "    drift plot: ",
+        ifelse(is.null(private$drift_plot), "NULL\n", "ggplot\n"),
         "    replicates plot: ",
         ifelse(is.null(private$replicate_plot), "NULL\n", "ggplot\n"),
         sep = ""
@@ -252,7 +252,7 @@ COGASData <- R6::R6Class(
       # Plotting ratios and responses, normalized to their respective averages,
       # for each `break_set` to understand how well the drift correction
       # procedure is working.
-      private$break_set_plot <- private$raw_data %>%
+      private$drift_plot <- private$raw_data %>%
         dplyr::filter_out(dplyr::when_any(
           sample_id %in% c(private$zero_gas, misc$PRECONDITION),
           control_set == 0
@@ -275,7 +275,7 @@ COGASData <- R6::R6Class(
         ggplot2::ggplot(ggplot2::aes(
           x = as.numeric(sample_set),
           color = sample_id,
-          group = break_set
+          group = interaction(break_set, sample_id)
         )) +
         ggplot2::geom_line(ggplot2::aes(
           y = norm_response,
@@ -399,12 +399,12 @@ COGASData <- R6::R6Class(
     #' @description
     #' Get all private attributes that are plot objects. If all attributes are
     #' not needed at the same time, it can be convenient to select a specific
-    #' one from the function call, i.e. `get_plots()$break_set_plot`.
+    #' one from the function call, i.e. `get_plots()$drift_plot`.
     #'
     #' @return A `list` of attributes.
     get_plots = function() {
       list(
-        break_set_plot = private$break_set_plot,
+        drift_plot = private$drift_plot,
         replicate_plot = private$replicate_plot
       )
     },
@@ -464,7 +464,7 @@ COGASData <- R6::R6Class(
 
     # [ggplot2::ggplot]: Plot of the normalized responses and ratios for each
     # break set.
-    break_set_plot = NULL,
+    drift_plot = NULL,
 
     # [ggplot2::ggplot]: Plot of replicate ratios with uncertainty bars for
     # each sample.

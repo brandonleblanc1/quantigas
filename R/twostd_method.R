@@ -57,7 +57,7 @@ twostd_method <- function(cal_obj) {
   # the transpose of ratios is taken above. The vector then gets recycled across
   # the columns of the matrix.
   pred_mc <- c1 + (1 - r1) * (c2 - c1) / (r2 - r1)
-  pred_sigma <- robustbase::covMcd(predicted_mc)$cov
+  pred_sigma <- robustbase::covMcd(pred_mc)$cov
 
   # Calculating weighted average and corresponding variance.
   ones <- rep(1, nrow(pred_sigma))

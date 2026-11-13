@@ -65,8 +65,8 @@ SampData <- R6::R6Class(
         "    calculated amounts: tbl_df [",
         paste0(dim(private$amounts), collapse = " x "),
         "]\n",
-        "    amount violin plot: ",
-        ifelse(is.null(private$amount_violin_plot), "NULL\n", "ggplot\n"),
+        "    amount fraction plot: ",
+        ifelse(is.null(private$amount_plot), "NULL\n", "ggplot\n"),
         sep = ""
       )
 
@@ -220,7 +220,7 @@ SampData <- R6::R6Class(
 
         # Plotting distribution of amount fractions by sample id, overlaid
         # with their location and uncertainty estimates.
-        private$amount_violin_plot <- ggplot2::ggplot(
+        private$amount_plot <- ggplot2::ggplot(
           mapping = ggplot2::aes(x = sample_id)
         ) +
           violin_layer +
@@ -271,10 +271,7 @@ SampData <- R6::R6Class(
     #'
     #' @return A `list` of attributes.
     get_plots = function() {
-      rlang::list2(
-        !!!super$get_plots(),
-        amount_violin_plot = private$amount_violin_plot
-      )
+      rlang::list2(!!!super$get_plots(), amount_plot = private$amount_plot)
     }
   ),
   private = list(
@@ -287,6 +284,6 @@ SampData <- R6::R6Class(
 
     # [ggplot2::ggplot] Plot of the distributions of the amount fraction MC
     # samples for each sample.
-    amount_violin_plot = NULL
+    amount_plot = NULL
   )
 )
