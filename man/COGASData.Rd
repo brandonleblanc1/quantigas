@@ -207,7 +207,7 @@ one from the function call, i.e. \code{get_data()$cleaned_data}.
 \subsection{\code{COGASData$get_plots()}}{
   Get all private attributes that are plot objects. If all attributes are
 not needed at the same time, it can be convenient to select a specific
-one from the function call, i.e. \code{get_plots()$break_set_plot}.
+one from the function call, i.e. \code{get_plots()$drift_plot}.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{COGASData$get_plots()}

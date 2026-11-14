@@ -558,7 +558,7 @@ COGASData <- R6::R6Class(
           ) %>%
           dplyr::relocate(sample_set, .after = sample_id)
       } else {
-        raw %>% mutate(uresponse = uresponse / sqrt(n))
+        raw %>% dplyr::mutate(uresponse = uresponse / sqrt(n))
       }
     },
 

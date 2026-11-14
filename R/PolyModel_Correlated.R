@@ -264,7 +264,7 @@ PolyModel_Correlated <- R6::R6Class(
       c_resid <- private$c_mc - self$predict(param_mc[1:(private$n_std), ])
 
       c_summ <- tibble::tibble(
-        resid = private$init_vals$c - model_info$xi[[1]],
+        resid = model_info$c_resid,
         uresid = sqrt(diag(robustbase::covMcd(t(c_resid))$cov))
       )
 
