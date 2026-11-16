@@ -254,39 +254,23 @@ PolyModel_Correlated <- R6::R6Class(
         })
       )
 
-      r_summ <- tibble::tibble(
-        resid = private$init_vals$rho0 - model_info$rho[[1]],
-        uresid = sqrt(
-          private$init_vals$sigma0^2 + diag(private$p_sigma)[1:(private$n_std)]
-        )
-      )
-
-      c_resid <- private$c_mc - self$predict(param_mc[1:(private$n_std), ])
-
-      c_summ <- tibble::tibble(
-        resid = model_info$c_resid,
-        uresid = sqrt(diag(robustbase::covMcd(t(c_resid))$cov))
-      )
+      c_pred <- self$predict(param_mc[1:(private$n_std), ])
+      c_resid <- private$c_mc - c_pred
 
       # Summarizing residuals for both ratios and amounts fractions.
-      private$sim_summ <- purrr::map(list(r = r_summ, c = c_summ), \(df) {
-        df %>%
-          dplyr::mutate(
-            sample_id = private$init_vals$sample_id,
-            zscore = resid / uresid
-          ) %>%
-          dplyr::relocate(sample_id)
-      }) %>%
-        dplyr::bind_rows(.id = "source") %>%
-        tidyr::pivot_wider(
-          names_from = source,
-          values_from = c(resid, uresid, zscore),
-          names_glue = "{source}_{.value}"
-        ) %>%
-        dplyr::relocate(
-          tidyselect::starts_with("c"),
-          .after = tidyselect::last_col()
-        )
+      private$sim_summ <- tibble::tibble(
+        sample_id = private$init_vals$sample_id,
+        rho = model_info$rho[[1]],
+        urho = sqrt(diag(private$p_sigma)[1:(private$n_std)]),
+        r_resid = private$init_vals$rho0 - rho,
+        r_uresid = sqrt(private$init_vals$sigma0^2 + urho^2),
+        r_zscore = r_resid / r_uresid,
+        xi = model_info$xi[[1]],
+        uxi = sqrt(diag(robustbase::covMcd(t(c_pred))$cov)),
+        c_resid = model_info$c_resid[[1]],
+        c_uresid = sqrt(private$init_vals$uc^2 + uxi^2),
+        c_zscore = c_resid / c_uresid
+      )
 
       # # Generating summary plots of residuals.
       private$r_mc_plot <- private$plot_mc_resid("r", r_resid)
