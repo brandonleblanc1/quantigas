@@ -51,7 +51,7 @@ PolyModel_Correlated <- R6::R6Class(
       # Getting initial values for rho and sigma, as well as lower and upper
       # bounds for rho.
       private$init_vals <- private$cal_data %>%
-        dplyr::right_join(cal_data$summ_stats, by = "sample_id") %>%
+        dplyr::left_join(cal_data$summ_stats, by = "sample_id") %>%
         dplyr::select(
           sample_id,
           rho0 = avg_ratio,
