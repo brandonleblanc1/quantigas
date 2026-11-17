@@ -297,20 +297,6 @@ PolyModel <- R6::R6Class(
 
       private$models %>%
         dplyr::select(model_num, tidyselect::all_of(c(fitted_var, zscore))) %>%
-        {
-          if (
-            (inherits(self, "PolyModel_Replicates") ||
-              inherits(self, "PolyModel_Correlated")) &&
-              (plot_var == "r")
-          ) {
-            dplyr::mutate(
-              .,
-              rho = purrr::map(rho, \(ratios) rep(ratios, private$init_vals$n))
-            )
-          } else {
-            .
-          }
-        } %>%
         tidyr::unnest_longer(!model_num) %>%
         ggplot2::ggplot(ggplot2::aes(
           x = .data[[fitted_var]],
