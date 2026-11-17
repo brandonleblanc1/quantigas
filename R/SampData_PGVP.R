@@ -149,30 +149,24 @@ SampData_PGVP <- R6::R6Class(
         # Plotting amount fractions and expanded uncertainties of both the
         # vendor results and NIST results.
         private$vendor_results_plot <- private$vendor_results %>%
-          ggplot2::ggplot(ggplot2::aes(x = sample_id)) +
+          tidyr::pivot_longer_spec(tibble::tribble(
+            ~.name          , ~.value  , ~type    ,
+            "amount"        , "amount" , "NIST"   ,
+            "uamount"       , "uncert" , "NIST"   ,
+            "vendor_amount" , "amount" , "Vendor" ,
+            "vendor_u"      , "uncert" , "Vendor"
+          )) %>%
+          ggplot2::ggplot(ggplot2::aes(
+            x = sample_id,
+            y = amount,
+            shape = type
+          )) +
           ggplot2::geom_pointrange(
-            ggplot2::aes(
-              y = vendor_amount,
-              ymin = vendor_amount - vendor_u,
-              ymax = vendor_amount + vendor_u,
-              shape = "Vendor"
-            ),
-            size = 0.5
+            ggplot2::aes(ymin = amount - uncert, ymax = amount + uncert),
+            size = 0.5,
+            position = ggplot2::position_dodge(0.5)
           ) +
-          ggplot2::geom_pointrange(
-            ggplot2::aes(
-              y = amount,
-              ymin = amount - uamount,
-              ymax = amount + uamount,
-              shape = "NIST"
-            ),
-            size = 0.5
-          ) +
-          ggplot2::scale_shape_manual(
-            name = NULL,
-            values = c(1, 2),
-            breaks = c("NIST", "Vendor")
-          ) +
+          ggplot2::scale_shape(name = NULL) +
           ggplot2::scale_x_discrete(guide = ggplot2::guide_axis(n.dodge = 2)) +
           ggplot2::labs(
             x = NULL,

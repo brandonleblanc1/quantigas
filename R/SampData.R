@@ -95,12 +95,9 @@ SampData <- R6::R6Class(
     calc_amounts = function(model_obj, summ_cols = defaults$SUMM_COLS) {
       # Finding subset of raw data that corresponds to samples kept in the
       # cleaned dataset.
-      cleaned_subset <- split(
-        seq_len(nrow(private$raw_data)),
-        private$raw_data$sample_id
-      ) %>%
-        magrittr::extract(levels(private$cleaned_data$sample_id)) %>%
-        unlist()
+      cleaned_subset <- as.numeric(as.character(
+        private$cleaned_data$sample_set
+      ))
 
       if (inherits(model_obj, "ModelBuilder")) {
         control_mc <- model_obj$predict()
@@ -175,10 +172,7 @@ SampData <- R6::R6Class(
         # Getting unnested amounts for violin plots.
         unnested <- private$amount_mc %>%
           tibble::as_tibble(.name_repair = "unique_quiet") %>%
-          dplyr::bind_cols(
-            private$cleaned_data,
-            .name_repair = "unique_quiet"
-          ) %>%
+          dplyr::bind_cols(private$cleaned_data) %>%
           tidyr::pivot_longer(tidyselect::starts_with("..."))
 
         # If an additional column was used to nest data during the calculation,
@@ -233,7 +227,6 @@ SampData <- R6::R6Class(
             data = private$amounts,
             size = 0.1
           ) +
-          ggplot2::scale_x_discrete(guide = ggplot2::guide_axis(n.dodge = 2)) +
           ggplot2::labs(
             x = NULL,
             y = str2expression(paste0("Amount ~~ Fraction ~~ (", units, ")"))

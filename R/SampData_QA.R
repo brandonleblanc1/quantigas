@@ -89,7 +89,7 @@ SampData_QA <- R6::R6Class(
       super$calc_amounts(...)
 
       private$amounts <- private$amounts %>%
-        dplyr::right_join(private$cert_data, by = "sample_id") %>%
+        dplyr::left_join(private$cert_data, by = "sample_id") %>%
         dplyr::mutate(
           diff = amount - c_cert,
           udiff = sqrt(uamount^2 + uc_cert^2),
@@ -114,32 +114,25 @@ SampData_QA <- R6::R6Class(
         # Plotting amount fractions and expanded uncertainties of both the
         # certified and current values.
         private$qa_results_plot <- private$amounts %>%
-          dplyr::mutate(uamount = 2 * uamount, uc_cert = 2 * uc_cert) %>%
-          ggplot2::ggplot(ggplot2::aes(x = sample_id)) +
+          tidyr::pivot_longer_spec(tibble::tribble(
+            ~.name    , ~.value  , ~type       ,
+            "amount"  , "amount" , "Current"   ,
+            "uamount" , "uncert" , "Current"   ,
+            "c_cert"  , "amount" , "Certified" ,
+            "uc_cert" , "uncert" , "Certified"
+          )) %>%
+          dplyr::mutate(uncert = 2 * uncert) %>%
+          ggplot2::ggplot(ggplot2::aes(
+            x = sample_id,
+            y = amount,
+            shape = type
+          )) +
           ggplot2::geom_pointrange(
-            ggplot2::aes(
-              y = c_cert,
-              ymin = c_cert - uc_cert,
-              ymax = c_cert + uc_cert,
-              shape = "Certified"
-            ),
-            size = 0.5
+            ggplot2::aes(ymin = amount - uncert, ymax = amount + uncert),
+            size = 0.5,
+            position = ggplot2::position_dodge(0.5)
           ) +
-          ggplot2::geom_pointrange(
-            ggplot2::aes(
-              y = amount,
-              ymin = amount - uamount,
-              ymax = amount + uamount,
-              shape = "Current"
-            ),
-            size = 0.5
-          ) +
-          ggplot2::scale_shape_manual(
-            name = NULL,
-            values = c(1, 2),
-            breaks = c("Certified", "Current")
-          ) +
-          ggplot2::scale_x_discrete(guide = ggplot2::guide_axis(n.dodge = 2)) +
+          ggplot2::scale_shape(name = NULL) +
           ggplot2::labs(
             x = NULL,
             y = str2expression(paste0("Amount ~~ Fraction ~~ (", units, ")"))

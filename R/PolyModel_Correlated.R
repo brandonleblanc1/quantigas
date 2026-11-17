@@ -76,7 +76,12 @@ PolyModel_Correlated <- R6::R6Class(
         as.numeric(levels(private$cal_data$sample_set)),
       ]
 
-      private$r_sigma <- robustbase::covMcd(t(private$r_mc))$cov
+      subsets <- purrr::map(private$init_vals$sample_id, \(samp) {
+        which(rownames(cal_mc$ratio_sigma) == samp)
+      }) %>%
+        unlist()
+
+      private$r_sigma <- cal_mc$ratio_sigma[subsets, subsets]
     },
 
     #' @description
@@ -155,8 +160,8 @@ PolyModel_Correlated <- R6::R6Class(
             \(r) eval(str2expression(funcs))(r, beta),
             numeric(1)
           )),
-          r_resid = list(private$cal_data$r - rep(rho, private$init_vals$n)),
-          r_zscore = list(r_resid / private$cal_data$ur),
+          r_resid = list(private$init_vals$rho0 - rho),
+          r_zscore = list(r_resid / private$init_vals$sigma0),
           c_resid = list(private$init_vals$c - xi),
           c_zscore = list(c_resid / sqrt(private$init_vals$uc^2 + tau^2)),
           n_params = length(opt$solution),
@@ -265,7 +270,7 @@ PolyModel_Correlated <- R6::R6Class(
         sample_id = private$init_vals$sample_id,
         rho = model_info$rho[[1]],
         urho = sqrt(diag(private$p_sigma)[1:(private$n_std)]),
-        r_resid = private$init_vals$rho0 - rho,
+        r_resid = model_info$r_resid[[1]],
         r_uresid = sqrt(private$init_vals$sigma0^2 + urho^2),
         r_zscore = r_resid / r_uresid,
         xi = model_info$xi[[1]],
@@ -435,7 +440,7 @@ PolyModel_Correlated <- R6::R6Class(
       tau0 <- stats::sigma(lm0)
       theta0 <- c(
         private$init_vals$rho0,
-        if (is.nan(tau0)) 1e-15 else log(tau0),
+        if (is.nan(tau0)) -35 else log(tau0),
         beta0
       )
 

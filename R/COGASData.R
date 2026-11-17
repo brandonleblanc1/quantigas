@@ -103,6 +103,12 @@ COGASData <- R6::R6Class(
         "    ratio mc samples: matrix [",
         paste0(dim(private$ratio_mc), collapse = " x "),
         "]\n",
+        "    response covariance: matrix [",
+        paste0(dim(private$response_sigma), collapse = " x "),
+        "]\n",
+        "    ratio covariance: matrix [",
+        paste0(dim(private$ratio_sigma), collapse = " x "),
+        "]\n",
         "    raw data: tbl_df [",
         paste0(dim(private$raw_data), collapse = " x "),
         "]\n",
@@ -168,6 +174,19 @@ COGASData <- R6::R6Class(
         dplyr::relocate(tidyselect::ends_with("ratio"), .after = day_set) %>%
         dplyr::arrange(sample_id, sample_set)
 
+      # Finding subset of raw data that corresponds to samples kept in the
+      # cleaned dataset.
+      cleaned_subset <- as.numeric(as.character(
+        private$cleaned_data$sample_set
+      ))
+
+      private$response_sigma <- robustbase::covMcd(t(private$response_mc[
+        cleaned_subset,
+      ]))$cov
+      private$ratio_sigma <- robustbase::covMcd(t(private$ratio_mc[
+        cleaned_subset,
+      ]))$cov
+
       invisible(self)
     },
 
@@ -181,24 +200,22 @@ COGASData <- R6::R6Class(
     #'
     #' @return The calling object invisibly.
     summarize_data = function(summ_cols = defaults$SUMM_COLS) {
-      # Finding subset of raw data that corresponds to samples kept in the
-      # cleaned dataset.
-      cleaned_subset <- split(
-        seq_len(nrow(private$raw_data)),
-        private$raw_data$sample_id
-      ) %>%
-        magrittr::extract(levels(private$cleaned_data$sample_id)) %>%
-        unlist()
-
-      # Subsetting MC samples, calculating covariance matrices, and centering.
-      mats <- purrr::map(
-        list(response = private$response_mc, ratio = private$ratio_mc),
-        \(mat) mat[cleaned_subset, ]
+      # Gathering covariance matrices and centering MC samples based on cleaned
+      # data subset.
+      sigma <- list(
+        response = private$response_sigma,
+        ratio = private$ratio_sigma
       )
-      sigma <- purrr::map(mats, \(mat) robustbase::covMcd(t(mat))$cov)
-      centered <- purrr::imap(mats, \(mat, name) {
-        sweep(mat, 1, private$cleaned_data[[name]])
-      })
+      centered <- purrr::imap(
+        list(response = private$response_mc, ratio = private$ratio_mc),
+        \(mat, name) {
+          sweep(
+            mat[as.numeric(as.character(private$cleaned_data$sample_set)), ],
+            1,
+            private$cleaned_data[[name]]
+          )
+        }
+      )
 
       # Finding subsets of cleaned data dictated by the summary columns.
       var_subsets <- split(
@@ -257,50 +274,33 @@ COGASData <- R6::R6Class(
           sample_id %in% c(private$zero_gas, misc$PRECONDITION),
           control_set == 0
         )) %>%
-        dplyr::summarise(
-          avg_response = mean(response),
-          avg_ratio = mean(ratio),
+        dplyr::mutate(
+          norm_response = response / mean(response),
+          norm_ratio = ratio / mean(ratio),
           .by = c(break_set, sample_id)
         ) %>%
-        dplyr::inner_join(
-          private$raw_data,
-          .,
-          by = c("break_set", "sample_id")
-        ) %>%
-        dplyr::mutate(
-          norm_response = response / avg_response,
-          norm_ratio = ratio / avg_ratio,
-          dplyr::across(tidyselect::where(is.factor), forcats::fct_drop)
-        ) %>%
+        dplyr::mutate(dplyr::across(
+          tidyselect::where(is.factor),
+          forcats::fct_drop
+        )) %>%
+        tidyr::pivot_longer_spec(tibble::tribble(
+          ~.name          , ~.value , ~type      ,
+          "norm_response" , "value" , "Response" ,
+          "norm_ratio"    , "value" , "Ratio"
+        )) %>%
         ggplot2::ggplot(ggplot2::aes(
           x = as.numeric(sample_set),
-          color = sample_id,
-          group = interaction(break_set, sample_id)
+          y = value,
+          color = sample_id
         )) +
         ggplot2::geom_line(ggplot2::aes(
-          y = norm_response,
-          linetype = "Response"
+          linetype = type,
+          group = interaction(break_set, sample_id, type)
         )) +
-        ggplot2::geom_point(
-          ggplot2::aes(y = norm_response, shape = "Response"),
-          size = 2
-        ) +
-        ggplot2::geom_line(ggplot2::aes(y = norm_ratio, linetype = "Ratio")) +
-        ggplot2::geom_point(
-          ggplot2::aes(y = norm_ratio, shape = "Ratio"),
-          size = 2
-        ) +
+        ggplot2::geom_point(ggplot2::aes(shape = type), size = 2) +
         ggplot2::scale_color_viridis_d(name = "Sample ID", option = "turbo") +
-        ggplot2::scale_linetype_manual(
-          name = NULL,
-          values = c(1, 3),
-          breaks = c("Ratio", "Response")
-        ) +
-        ggplot2::scale_shape_manual(
-          name = NULL,
-          values = c(19, 1),
-          breaks = c("Ratio", "Response")
-        ) +
+        ggplot2::scale_linetype_manual(name = NULL, values = c(1, 3)) +
+        ggplot2::scale_shape_manual(name = NULL, values = c(19, 1)) +
         ggplot2::guides(
           shape = ggplot2::guide_legend(order = 1),
           linetype = ggplot2::guide_legend(order = 1),
@@ -310,19 +310,12 @@ COGASData <- R6::R6Class(
         ggplot2::theme_bw()
 
       # Getting unnested ratios for violin plots.
-      unnested <- private$ratio_mc %>%
-        `rownames<-`(seq_len(nrow(.))) %>%
-        tibble::as_tibble(
-          .name_repair = "unique_quiet",
-          rownames = "sample_set"
-        ) %>%
-        dplyr::left_join(private$cleaned_data, ., by = "sample_set") %>%
-        tidyr::pivot_longer(
-          tidyselect::starts_with("..."),
-          names_to = "mc_repl",
-          values_to = "ratio_mc"
-        ) %>%
-        dplyr::select(sample_id, sample_set, break_set, ratio_mc)
+      unnested <- private$ratio_mc[
+        as.numeric(as.character(private$cleaned_data$sample_set)),
+      ] %>%
+        tibble::as_tibble(.name_repair = "unique_quiet") %>%
+        dplyr::bind_cols(private$cleaned_data) %>%
+        tidyr::pivot_longer(tidyselect::starts_with("..."))
 
       # Plotting distribution of each replicate ratio by sample id, overlaid
       # with their location and uncertainty estimates.
@@ -330,7 +323,7 @@ COGASData <- R6::R6Class(
         mapping = ggplot2::aes(x = sample_id)
       ) +
         ggplot2::geom_violin(
-          ggplot2::aes(y = ratio_mc, fill = break_set, group = sample_set),
+          ggplot2::aes(y = value, fill = break_set, group = sample_set),
           data = unnested,
           position = "identity",
           quantile.linetype = 3,
@@ -378,7 +371,9 @@ COGASData <- R6::R6Class(
       list(
         response_mc = private$response_mc,
         control_mc = private$control_mc,
-        ratio_mc = private$ratio_mc
+        ratio_mc = private$ratio_mc,
+        response_sigma = private$response_sigma,
+        ratio_sigma = private$ratio_sigma
       )
     },
 
@@ -452,6 +447,12 @@ COGASData <- R6::R6Class(
 
     # `matrix`: Monte Carlo samples for ratios.
     ratio_mc = NULL,
+
+    # `matrix`: Covariance matrix for responses.
+    response_sigma = NULL,
+
+    # `matrix`: Covariance matrix for ratios
+    ratio_sigma = NULL,
 
     # [tibble::tibble]: Raw data from the current analysis.
     raw_data = NULL,
