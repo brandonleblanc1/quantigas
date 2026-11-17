@@ -132,7 +132,10 @@ PolyModel_Correlated <- R6::R6Class(
     #' @return The calling object invisibly.
     model_selection = function() {
       # Setting up for parallel processing.
-      future::plan(future::multisession, workers = future::availableCores() - 2)
+      future::plan(
+        future::multisession,
+        workers = parallelly::availableCores() - 2
+      )
 
       private$models <- private$build_models() %>%
         dplyr::mutate(
@@ -430,7 +433,11 @@ PolyModel_Correlated <- R6::R6Class(
       )
       beta0 <- unname(lm0$coefficients)
       tau0 <- stats::sigma(lm0)
-      theta0 <- c(private$init_vals$rho0, log(tau0), beta0)
+      theta0 <- c(
+        private$init_vals$rho0,
+        if (is.nan(tau0)) 1e-15 else log(tau0),
+        beta0
+      )
 
       lb <- c(private$init_vals$rho_lb, rep(-Inf, 1 + length(beta0)))
       ub <- c(private$init_vals$rho_ub, rep(Inf, 1 + length(beta0)))
