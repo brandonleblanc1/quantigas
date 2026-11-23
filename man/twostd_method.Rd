@@ -4,11 +4,15 @@
 \alias{twostd_method}
 \title{Two-Standard Method (Linear Interpolation)}
 \usage{
-twostd_method(cal_obj)
+twostd_method(cal_obj, filt_samples = "")
 }
 \arguments{
 \item{cal_obj}{(\link{CalData})
 Calibration data object.}
+
+\item{filt_samples}{(\code{character})
+Sample(s) of interest to exclude from the model. Defaults to an empty
+string.}
 }
 \value{
 A \link[tibble:tibble]{tibble::tibble} of results for the control sample.

@@ -5,14 +5,17 @@
 #'
 #' @param cal_obj ([CalData])
 #'   Calibration data object.
+#' @param filt_samples (`character`)
+#'   Sample(s) of interest to exclude from the model. Defaults to an empty
+#'   string.
 #'
 #' @return A [tibble::tibble] of results for the control sample.
 #'
 #' @export
-twostd_method <- function(cal_obj) {
+twostd_method <- function(cal_obj, filt_samples = "") {
   stopifnot(
     inherits(cal_obj, "CalData"),
-    nrow(cal_obj$get_data()$cert_data) == 2
+    length(setdiff(cal_obj$get_data()$cert_data$sample_id, filt_samples)) == 2
   )
 
   data <- cal_obj$get_data()
@@ -20,6 +23,7 @@ twostd_method <- function(cal_obj) {
   # Combining certification data with cleaned data.
   cal_data <- data$cleaned_data %>%
     dplyr::right_join(data$cert_data, by = "sample_id") %>%
+    dplyr::filter_out(sample_id %in% filt_samples) %>%
     dplyr::select(
       sample_id,
       sample_set,
@@ -46,9 +50,9 @@ twostd_method <- function(cal_obj) {
     matrix(nrow = 2)
 
   # Extracting portions of MC samples for each standard.
-  ratio_splits <- split(seq_len(nrow(cal_data)), cal_data$sample_id)
-  r1 <- t(ratio_mc[ratio_splits[[1]], ])
-  r2 <- t(ratio_mc[ratio_splits[[2]], ])
+  ratio_splits <- split.data.frame(ratio_mc, rownames(ratio_mc))
+  r1 <- t(ratio_splits[[1]])
+  r2 <- t(ratio_splits[[2]])
   c1 <- amount_mc[1, ]
   c2 <- amount_mc[2, ]
 
